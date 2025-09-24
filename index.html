@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Daily Detective – Fog on the Thames</title>
+<style>
+  :root{--bg:#0f1115;--fg:#e8ecf1;--muted:#9aa4b2;--yes:#2ecc71;--no:#e74c3c;--unknown:#3a3f4b;--card:#171a21;--accent:#53a7ff;--culprit:#ff4757;--innocent:#1e90ff}
+  body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  header{padding:18px 20px;border-bottom:1px solid #222;background:#0d0f13}
+  h1{margin:0;font-size:20px}
+  main{max-width:980px;margin:20px auto;padding:0 16px}
+  .brief{background:var(--card);border:1px solid #222;border-radius:10px;padding:14px 16px}
+  .row{display:grid;gap:16px;margin-top:16px}
+  @media(min-width:880px){.row{grid-template-columns:1fr 1fr}}
+  table{border-collapse:separate;border-spacing:0;margin:0;width:100%;background:#111318;border:1px solid #222;border-radius:10px;overflow:hidden}
+  caption{caption-side:top;text-align:left;padding:10px 12px;color:#9aa4b2}
+  th,td{border-bottom:1px solid #1d212a;border-right:1px solid #1d212a;padding:10px 8px;text-align:center}
+  th{background:#12151b;font-weight:600}
+  tr:last-child td, tr:last-child th{border-bottom:0}
+  td:last-child, th:last-child{border-right:0}
+  .chip{display:inline-block;padding:2px 8px;border-radius:999px;background:#0e1117;border:1px solid #242a35;color:var(--muted);margin-right:6px}
+  .legend{margin:6px 0 0 0;color:var(--muted);font-size:12px}
+  .cell{cursor:pointer;user-select:none;border-radius:6px}
+  .u{background:var(--unknown)}
+  .y{background:var(--yes);font-weight:700}
+  .n{background:var(--no);color:#fff;opacity:.7}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+  button{background:var(--accent);border:0;color:#001326;font-weight:700;padding:9px 12px;border-radius:8px;cursor:pointer}
+  button.secondary{background:#232a35;color:#cbd5e1;border:1px solid #2f3947}
+  button.ghost{background:transparent;color:#9fbfff;border:1px dashed #2f3947}
+  .warn{color:#ffd166;margin-left:10px}
+  .good{color:#2ecc71;margin-left:10px}
+  details{background:#0e1117;border:1px solid #222;border-radius:10px;padding:10px 14px}
+  summary{cursor:pointer;color:#bcd3ff}
+  .mini{font-size:13px;color:#9aa4b2}
+  .center{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .pill{padding:4px 8px;border-radius:999px;background:#0e1117;border:1px solid #2b3240;color:#cdd6e3}
+  .culprit{padding:4px 10px;border-radius:999px;background:var(--culprit);color:#fff;font-weight:700}
+  .innocent{padding:4px 10px;border-radius:999px;background:var(--innocent);color:#fff;font-weight:700}
+  .ending{margin-top:20px;padding:14px 16px;background:#171a21;border:1px solid #222;border-radius:10px;display:none}
+  .heat{transition:background-color .2s ease, color .2s ease}
+  .hidden{display:none}
+  .roleTag{margin-left:6px;font-size:12px;padding:2px 6px;border-radius:6px}
+  .tabs{display:flex;gap:8px;margin:12px 0}
+  .tab{padding:8px 10px;border-radius:8px;border:1px solid #2f3947;background:#232a35;color:#cbd5e1;cursor:pointer}
+  .tab.active{background:var(--accent);color:#001326;border-color:transparent}
+  .interrogate{display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start}
+  .suspectList{background:#111318;border:1px solid #222;border-radius:10px;padding:8px}
+  .suspectCard{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;cursor:pointer}
+  .suspectCard.active{outline:2px solid var(--accent);background:#0f1a24}
+  .badge{padding:2px 6px;border-radius:6px;font-size:12px}
+  .group{background:#111318;border:1px solid #222;border-radius:10px;padding:10px}
+  .group h4{margin:0 0 8px 0}
+  .choiceBar{display:flex;flex-wrap:wrap;gap:8px}
+  .choice{padding:8px 10px;border-radius:999px;border:1px solid #2b3240;background:#0e1117;color:#cdd6e3;cursor:pointer}
+  .choice.on{background:var(--yes);color:#0c0f12;border-color:transparent;font-weight:700}
+  .choice.off{background:#2a1113;color:#ffd9d9;border-color:#3b1a1d}
+  .hint{font-size:12px;color:#9aa4b2;margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Daily Detective — Case D-0923: Fog on the Thames</h1>
+</header>
+<main>
+  <section class="brief">
+    <p><b>Case brief.</b> The hour is late, and London is hushed beneath a shroud of fog. From the bell of St. Paul’s to the cries at Billingsgate, the city’s heartbeat is muffled, its alleys dangerous. Somewhere along the river’s edge, a royal courier vanished — along with a sealed folio whispered to contain secrets capable of toppling ministries. Witnesses report four familiar silhouettes in the mist: <b>Harper</b>, <b>Lin</b>, <b>Doyle</b>, and <b>Sutton</b>, each trusted once, but trust is brittle in the gaslight. Between <b>Duke Street</b>, the <b>River Pier</b>, the <b>Museum</b>, and the <b>Tea Room</b>, one deception was played. A <b>Parcel Swap</b>, a deft <b>Key Lift</b>, a flawless <b>Disguise</b>, or the darkest sin of all — an <b>Inside Job</b>. The motives are tangled in whispers of <b>Debt</b>, <b>Jealousy</b>, <b>Greed</b>, and a desperate <b>Cover‑up</b>. The fog conceals, but also reveals to a careful eye.</p>
+    <p><b>Your task:</b> Complete the detective’s grid. Mark \u2713 where a pairing is true and \u2717 where it is false. Each suspect must be linked to exactly one Location, one Method, and one Motive. When the grid is complete, press <b>Submit Guess</b>. The suspect with the motive <b>Cover‑up</b> is the <b>Culprit</b>. You have 6 attempts to crack the case before the trail goes cold.</p>
+    <div class="legend">
+      <span class="chip">Tap cell: · → ✓ → ✗</span>
+      <span class="chip">Rows & columns must be unique</span>
+      <span id="culpritBadge" class="culprit" style="display:none"></span>
+    </div>
+  </section>
+
+  <div class="toolbar center">
+    <div class="tabs">
+      <button class="tab active" id="tabInterrogation">Interrogation</button>
+      <button class="tab" id="tabBoard">Board</button>
+    </div>
+    <button id="reset" class="secondary">Reset</button>
+    <button id="applyClues" class="secondary">Re‑apply clues</button>
+    <button id="check">Check</button>
+    <button id="submit">Submit Guess</button>
+    <button id="share" class="ghost" disabled>Share</button>
+    <span id="status" class="mini"></span>
+    <span id="tries" class="pill">Try 0 of 6</span>
+  </div>
+
+  <div class="row" id="interrogationRow">
+    <div class="interrogate" id="interrogate"></div>
+  </div>
+  <div class="row hidden" id="boardRow">
+    <div id="megaGrid" style="grid-column:1 / -1"></div>
+  </div>
+
+  <!-- Hidden legacy grids to support logic rendering & tests -->
+  <div class="row hidden">
+    <div id="gridSL"></div>
+    <div id="gridSM"></div>
+  </div>
+  <div class="row hidden">
+    <div id="gridSV"></div>
+    <div></div>
+  </div>
+
+  <div class="row">
+    <div>
+      <details open>
+        <summary>Clues</summary>
+        <ol class="mini" style="margin-left:18px">
+          <li>The act at the <b>River Pier</b> wasn’t done by the person acting out of <b>Greed</b>.</li>
+          <li><b>Doyle</b> wasn’t at the <b>Museum</b> or the <b>Tea Room</b>.</li>
+          <li>The <b>Parcel Swap</b> was <i>not</i> at <b>Duke Street</b>.</li>
+          <li>Whoever was at the <b>Tea Room</b> acted from <b>Debt</b>.</li>
+          <li><b>Harper</b> had no reason to <b>cover up</b> anything.</li>
+          <li>The <b>Disguise</b> wasn’t used at the <b>Museum</b>.</li>
+          <li><b>Lin</b> was seen at the <b>River Pier</b>.</li>
+          <li><b>Harper</b> used a <b>Key Lift</b>.</li>
+          <li><b>Harper</b> acted out of <b>Jealousy</b>.</li>
+          <li><b>Sutton</b>’s method was an <b>Inside Job</b>.</li>
+          <li><b>Culprit rule:</b> the suspect with motive <b>Cover‑up</b> is the <b>Culprit</b>; all others are <b>Innocent</b>.</li>
+        </ol>
+      </details>
+    </div>
+  </div>
+
+  <div id="roles" style="margin-top:16px"></div>
+
+  <div id="ending" class="ending"></div>
+</main>
+
+<script>
+/* ===== Game Data ===== */
+var CASE_ID = 'D-0923';
+var MAX_TRIES = 6;
+var suspects = ['Harper','Lin','Doyle','Sutton'];
+var locations = ['Duke Street','River Pier','Museum','Tea Room'];
+var methods   = ['Parcel Swap','Key Lift','Disguise','Inside Job'];
+var motives   = ['Debt','Jealousy','Greed','Cover-up'];
+
+// Consistent with all clues
+var solution = {
+  'Harper': ['Museum','Key Lift','Jealousy'],
+  'Lin':    ['River Pier','Parcel Swap','Cover-up'],
+  'Doyle':  ['Duke Street','Disguise','Greed'],
+  'Sutton': ['Tea Room','Inside Job','Debt']
+};
+
+/* ===== State ===== */
+// 0 unknown, 1 yes, -1 no
+function gridState(rows, cols){ var m={}; for(var i=0;i<rows.length;i++){ var r=rows[i]; m[r]={}; for(var j=0;j<cols.length;j++){ m[r][cols[j]]=0; } } return m; }
+var SL = gridState(suspects, locations);
+var SM = gridState(suspects, methods);
+var SV = gridState(suspects, motives);
+
+var storeKey = 'ddet:'+CASE_ID+':tries';
+var storeGuessesKey = 'ddet:'+CASE_ID+':guesses';
+var tries = Number(localStorage.getItem(storeKey) || 0);
+var guesses = JSON.parse(localStorage.getItem(storeGuessesKey) || '[]');
+
+/* ===== Grid helpers ===== */
+function setCell(state, r, c, val, rows, cols){
+  state[r][c]=val;
+  if(val===1){
+    for(var k=0;k<cols.length;k++){ var cc=cols[k]; if(cc!==c) state[r][cc]=-1; }
+    for(var i=0;i<rows.length;i++){ var rr=rows[i]; if(rr!==r) state[rr][c]=-1; }
+  }
+}
+function mark(state, r, c, val, rows, cols){
+  var cur=state[r][c]; if(cur===val) return true; if(cur!==0 && cur!==val) return false; setCell(state,r,c,val,rows,cols); return true;
+}
+function cycleCell(state, r, c, rows, cols){
+  var cur=state[r][c]; var next = (cur===0?1:(cur===1?-1:0));
+  setCell(state,r,c,next,rows,cols); renderAll(); applyClues(); renderAll(); checkContradictions(); showDerivedCulprit();
+}
+
+/* ===== Clue propagation ===== */
+function applyClues(){
+  // (2) Doyle \u2260 Museum / Tea Room
+  mark(SL,'Doyle','Museum',-1,suspects,locations);
+  mark(SL,'Doyle','Tea Room',-1,suspects,locations);
+  // (3) Parcel Swap \u2260 Duke Street
+  for(var i=0;i<suspects.length;i++){
+    var s=suspects[i];
+    if(SM[s]['Parcel Swap']===1) mark(SL,s,'Duke Street',-1,suspects,locations);
+    if(SL[s]['Duke Street']===1) mark(SM,s,'Parcel Swap',-1,suspects,methods);
+  }
+  // (6) Disguise \u2260 Museum
+  for(var j=0;j<suspects.length;j++){
+    var ss=suspects[j];
+    if(SM[ss]['Disguise']===1) mark(SL,ss,'Museum',-1,suspects,locations);
+    if(SL[ss]['Museum']===1) mark(SM,ss,'Disguise',-1,suspects,methods);
+  }
+  // (1) River Pier \u2260 Greed
+  for(var k=0;k<suspects.length;k++){
+    var s3=suspects[k];
+    if(SL[s3]['River Pier']===1) mark(SV,s3,'Greed',-1,suspects,motives);
+    if(SV[s3]['Greed']===1) mark(SL,s3,'River Pier',-1,suspects,locations);
+  }
+  // (4) Tea Room \u2194 Debt
+  for(var t=0;t<suspects.length;t++){
+    var s4=suspects[t];
+    if(SL[s4]['Tea Room']===1) mark(SV,s4,'Debt',1,suspects,motives);
+    if(SV[s4]['Debt']===1) mark(SL,s4,'Tea Room',1,suspects,locations);
+  }
+  // (5) Harper \u2260 Cover-up
+  mark(SV,'Harper','Cover-up',-1,suspects,motives);
+  // (7) Lin @ River Pier
+  mark(SL,'Lin','River Pier',1,suspects,locations);
+  // (8) Harper used Key Lift
+  mark(SM,'Harper','Key Lift',1,suspects,methods);
+  // (9) Harper motive Jealousy
+  mark(SV,'Harper','Jealousy',1,suspects,motives);
+  // (10) Sutton method Inside Job
+  mark(SM,'Sutton','Inside Job',1,suspects,methods);
+}
+
+/* ===== Rendering (legacy mini-grids) ===== */
+function makeTable(title, rows, cols, state, mountId){
+  var host = document.getElementById(mountId); if(!host) return;
+  host.innerHTML='';
+  var t=document.createElement('table');
+  var cap=document.createElement('caption'); cap.textContent=title; t.appendChild(cap);
+  var thead=document.createElement('thead');
+  var hr=document.createElement('tr'); hr.appendChild(document.createElement('th'));
+  for(var i=0;i<cols.length;i++){ var th=document.createElement('th'); th.textContent=cols[i]; hr.appendChild(th); }
+  thead.appendChild(hr); t.appendChild(thead);
+  var tbody=document.createElement('tbody');
+  for(var r=0;r<rows.length;r++){
+    var tr=document.createElement('tr');
+    var th2=document.createElement('th'); th2.textContent=rows[r]; tr.appendChild(th2);
+    for(var c=0;c<cols.length;c++){
+      var td=document.createElement('td'); td.className='cell u'; td.dataset.r=rows[r]; td.dataset.c=cols[c];
+      (function(rr,cc){ td.onclick=function(){ cycleCell(state,rr,cc,rows,cols); }; })(rows[r],cols[c]);
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  t.appendChild(tbody); host.appendChild(t);
+}
+function renderGrid(state, mountId){
+  var host=document.getElementById(mountId); if(!host) return;
+  var tds=host.querySelectorAll('td.cell');
+  for(var i=0;i<tds.length;i++){
+    var td=tds[i]; var r=td.dataset.r, c=td.dataset.c; var v=state[r][c];
+    td.textContent = (v===1?'\u2713':v===-1?'\u2717':'\u00B7');
+    td.className = 'cell ' + (v===1?'y':v===-1?'n':'u');
+  }
+}
+
+/* ===== Mega Heatmap Board ===== */
+function makeMegaTable(mountId){
+  var host=document.getElementById(mountId); if(!host) return; host.innerHTML='';
+  var t=document.createElement('table');
+  var thead=document.createElement('thead');
+  var r1=document.createElement('tr');
+  var blank=document.createElement('th'); blank.textContent=''; r1.appendChild(blank);
+  var hLoc=document.createElement('th'); hLoc.textContent='Location'; hLoc.colSpan=locations.length; r1.appendChild(hLoc);
+  var hMet=document.createElement('th'); hMet.textContent='Method';   hMet.colSpan=methods.length;   r1.appendChild(hMet);
+  var hMot=document.createElement('th'); hMot.textContent='Motive';   hMot.colSpan=motives.length;   r1.appendChild(hMot);
+  thead.appendChild(r1);
+  var r2=document.createElement('tr'); r2.appendChild(document.createElement('th'));
+  for(var i=0;i<locations.length;i++){ var th=document.createElement('th'); th.textContent=locations[i]; r2.appendChild(th); }
+  for(var j=0;j<methods.length;j++){ var thm=document.createElement('th'); thm.textContent=methods[j]; r2.appendChild(thm); }
+  for(var k=0;k<motives.length;k++){ var thv=document.createElement('th'); thv.textContent=motives[k]; r2.appendChild(thv); }
+  thead.appendChild(r2); t.appendChild(thead);
+  var tbody=document.createElement('tbody');
+  for(var s=0;s<suspects.length;s++){
+    var tr=document.createElement('tr');
+    var ths=document.createElement('th'); ths.textContent=suspects[s]; ths.dataset.roleTh=suspects[s]; tr.appendChild(ths);
+    for(var a=0;a<locations.length;a++){ tr.appendChild(makeMegaCell('L', suspects[s], locations[a])); }
+    for(var b=0;b<methods.length;b++){ tr.appendChild(makeMegaCell('M', suspects[s], methods[b])); }
+    for(var c=0;c<motives.length;c++){ tr.appendChild(makeMegaCell('V', suspects[s], motives[c])); }
+    tbody.appendChild(tr);
+  }
+  t.appendChild(tbody); host.appendChild(t);
+}
+function makeMegaCell(kind, s, val){
+  var td=document.createElement('td'); td.className='cell heat'; td.dataset.kind=kind; td.dataset.s=s; td.dataset.val=val;
+  td.onclick=function(){
+    if(kind==='L') cycleCell(SL,s,val,suspects,locations);
+    else if(kind==='M') cycleCell(SM,s,val,suspects,methods);
+    else cycleCell(SV,s,val,suspects,motives);
+    renderAll();
+  };
+  return td;
+}
+function violatesUniqueness(state, r, c, cols){
+  var rowOnes=0; for(var k in state[r]) if(state[r][k]===1) rowOnes++;
+  var colOnes=0; for(var i=0;i<suspects.length;i++){ var s=suspects[i]; if(state[s][c]===1) colOnes++; }
+  return (rowOnes>0 && state[r][c]!==1) || (colOnes>0 && state[r][c]!==1);
+}
+function currentGuess(){
+  function pick(state){ var out={}; for(var i=0;i<suspects.length;i++){ var s=suspects[i]; var choice=null; for(var k in state[s]){ if(state[s][k]===1){ choice=k; break; } } out[s]=choice; } return out; }
+  var locs=pick(SL), mets=pick(SM), mots=pick(SV), g={};
+  for(var i=0;i<suspects.length;i++){ var s=suspects[i]; g[s]=[locs[s],mets[s],mots[s]]; }
+  return g;
+}
+function renderMega(){
+  var cells=document.querySelectorAll('#megaGrid td.cell');
+  for(var i=0;i<cells.length;i++){
+    var td=cells[i]; var kind=td.dataset.kind; var s=td.dataset.s; var v=td.dataset.val;
+    var state=(kind==='L')?SL:(kind==='M')?SM:SV;
+    var cols=(kind==='L')?locations:(kind==='M')?methods:motives;
+    var val=state[s][v];
+    td.textContent=(val===1?'\u2713':val===-1?'\u2717':'\u00B7');
+    var score=0.5; var feasible=(val!==-1);
+    if(!feasible) score=0.1; else score=0.55;
+    if(feasible){ if(violatesUniqueness(state,s,v,cols) && val!==1) score-=0.3; }
+    if(val===1){ var bad=violatesUniqueness(state,s,v,cols); score = bad?0.2:0.9; }
+    if(score<0) score=0; if(score>1) score=1;
+    var hue=220-Math.round(210*score); var sat=70; var light=38+Math.round(12*score);
+    td.style.backgroundColor='hsl('+hue+','+sat+'%,'+light+'%)';
+    td.style.color = (score>0.75?'#0c0f12':'#e8ecf1');
+  }
+  // Update inline role tags on row headers
+  var g=currentGuess();
+  for(var i2=0;i2<suspects.length;i2++){
+    var name=suspects[i2];
+    var th=document.querySelector('th[data-role-th="'+name+'"]'); if(!th) continue;
+    var motive=g[name][2];
+    var label='';
+    if(motive==='Cover-up') label=' <span class="roleTag" style="background:'+getComputedStyle(document.documentElement).getPropertyValue('--culprit').trim()+';color:#fff">CULPRIT</span>';
+    else if(motive) label=' <span class="roleTag" style="background:'+getComputedStyle(document.documentElement).getPropertyValue('--innocent').trim()+';color:#fff">Innocent</span>';
+    else label=' <span class="roleTag" style="background:#444;color:#ccc">Unknown</span>';
+    th.innerHTML = name + label;
+  }
+}
+
+/* ===== Interrogation Mode ===== */
+var activeSuspect = suspects[0];
+function buildInterrogation(){
+  var host=document.getElementById('interrogate'); if(!host) return; host.innerHTML='';
+  var list=document.createElement('div'); list.className='suspectList';
+  for(var i=0;i<suspects.length;i++){
+    var s=suspects[i];
+    var card=document.createElement('div'); card.className='suspectCard'+(s===activeSuspect?' active':''); card.dataset.suspect=s;
+    var left=document.createElement('div'); left.textContent=s; card.appendChild(left);
+    var badge=document.createElement('span'); badge.className='badge'; badge.textContent=''; card.appendChild(badge);
+    (function(ss){ card.onclick=function(){ activeSuspect=ss; renderAll(); }; })(s);
+    list.appendChild(card);
+  }
+  host.appendChild(list);
+  var panel=document.createElement('div'); panel.id='panel'; host.appendChild(panel);
+}
+function renderInterrogation(){
+  var panel=document.getElementById('panel'); if(!panel) return; panel.innerHTML='';
+  // update active highlighting
+  var cards=document.querySelectorAll('.suspectCard');
+  for(var i=0;i<cards.length;i++){ var c=cards[i]; if(c.dataset.suspect===activeSuspect) c.classList.add('active'); else c.classList.remove('active'); }
+
+  var title=document.createElement('h3'); title.textContent='Interrogate: '+activeSuspect; panel.appendChild(title);
+  // groups
+  panel.appendChild(renderGroup('Location', 'L', locations, SL));
+  panel.appendChild(renderGroup('Method',   'M', methods,   SM));
+  panel.appendChild(renderGroup('Motive',   'V', motives,   SV));
+  var hint=document.createElement('div'); hint.className='hint'; hint.textContent='Click a choice to set \u2713 (others in that row flip to \u2717). Clues and uniqueness propagate automatically.'; panel.appendChild(hint);
+}
+function renderGroup(label, kind, values, state){
+  var wrap=document.createElement('div'); wrap.className='group';
+  var h=document.createElement('h4'); h.textContent=label; wrap.appendChild(h);
+  var bar=document.createElement('div'); bar.className='choiceBar';
+  var s=activeSuspect;
+  for(var i=0;i<values.length;i++){
+    (function(val){
+      var btn=document.createElement('button'); btn.className='choice'; btn.textContent=val;
+      var cur=state[s][val];
+      if(cur===1) btn.classList.add('on'); else if(cur===-1) btn.classList.add('off');
+      btn.onclick=function(){ selectChoice(kind,s,val); };
+      bar.appendChild(btn);
+    })(values[i]);
+  }
+  wrap.appendChild(bar);
+  return wrap;
+}
+function selectChoice(kind,s,val){
+  if(kind==='L') setCell(SL,s,val, 1, suspects, locations);
+  else if(kind==='M') setCell(SM,s,val, 1, suspects, methods);
+  else setCell(SV,s,val, 1, suspects, motives);
+  applyClues(); renderAll(); checkContradictions(); showDerivedCulprit();
+}
+
+/* ===== Validations ===== */
+function checkContradictions(){
+  var status=document.getElementById('status');
+  function dup(state, cols){
+    for(var i=0;i<suspects.length;i++){ var s=suspects[i]; var ones=0; for(var k in state[s]) if(state[s][k]===1) ones++; if(ones>1) return true; }
+    for(var j=0;j<cols.length;j++){ var c=cols[j]; var cnt=0; for(var i2=0;i2<suspects.length;i2++){ var s2=suspects[i2]; if(state[s2][c]===1) cnt++; } if(cnt>1) return true; }
+    return false;
+  }
+  if(dup(SL,locations)||dup(SM,methods)||dup(SV,motives)){ status.textContent='Conflict: a row/column has multiple \u2713.'; status.className='mini warn'; }
+}
+function readyToSubmit(){
+  function uniqRow(state){ for(var i=0;i<suspects.length;i++){ var s=suspects[i]; var ones=0; for(var k in state[s]) if(state[s][k]===1) ones++; if(ones!==1) return false; } return true; }
+  function uniqCol(state, cols){ for(var j=0;j<cols.length;j++){ var c=cols[j]; var cnt=0; for(var i=0;i<suspects.length;i++){ var s=suspects[i]; if(state[s][c]===1) cnt++; } if(cnt!==1) return false; } return true; }
+  return uniqRow(SL)&&uniqRow(SM)&&uniqRow(SV)&&uniqCol(SL,locations)&&uniqCol(SM,methods)&&uniqCol(SV,motives);
+}
+function derivedCulprit(g){ for(var i=0;i<suspects.length;i++){ var s=suspects[i]; if(g[s][2]==='Cover-up') return s; } return null; }
+function scoreGuess(g){ var m=0; for(var i=0;i<suspects.length;i++){ var s=suspects[i]; var sol=solution[s]; var L=sol[0], M=sol[1], V=sol[2]; var l=g[s][0], meth=g[s][1], mot=g[s][2]; if(l===L)m++; if(meth===M)m++; if(mot===V)m++; } return {correct:m===12, matches:m, culprit:derivedCulprit(g)}; }
+
+/* ===== Roles, Sharing & Ending ===== */
+function showDerivedCulprit(){ var badge=document.getElementById('culpritBadge'); var coverUps=suspects.filter(function(s){ return SV[s]['Cover-up']===1; }); if(coverUps.length===1){ badge.textContent='Culprit (derived): '+coverUps[0]; badge.style.display='inline-block'; } else { badge.style.display='none'; } }
+function showRoles(){ var g=currentGuess(); var box=document.getElementById('roles'); box.innerHTML='<h4>Current Roles</h4>'; for(var i=0;i<suspects.length;i++){ var s=suspects[i]; var motive=g[s][2]; if(motive==='Cover-up') box.innerHTML+='<div><b>'+s+'</b> <span class="roleTag culprit">CULPRIT</span></div>'; else if(motive) box.innerHTML+='<div><b>'+s+'</b> <span class="roleTag innocent">Innocent</span></div>'; else box.innerHTML+='<div><b>'+s+'</b> <span class="roleTag" style="background:#444;color:#ccc">Unknown</span></div>'; } }
+function emojiRowForSuspect(s,g){ var sol=solution[s]; function b(v){ return v?'\uD83D\uDFE9':'\u2B1B'; } var name=(s.length<6?(s+'      ').slice(0,6):s.slice(0,6)); return name+' '+b(g[s][0]===sol[0])+b(g[s][1]===sol[1])+b(g[s][2]===sol[2]); }
+function shareText(solved, triesUsed, g){ var header= solved?('Daily Detective '+CASE_ID+' \u2014 '+triesUsed+'/6'):('Daily Detective '+CASE_ID+' \u2014 X/6'); var rows=suspects.map(function(s){return emojiRowForSuspect(s,g);}).join('\n'); var cul=derivedCulprit(g); return header+'\n'+rows+'\nCulprit: '+(cul?cul:'\u2014')+'\n#DailyDetective'; }
+function revealSolution(){ var out='<h4>Official Report</h4><ul>'; for(var s in solution){ var L=solution[s][0], M=solution[s][1], V=solution[s][2]; out+='<li><b>'+s+'</b> — Location: '+L+', Method: '+M+', Motive: '+V+'</li>'; } out+='</ul>'; return out; }
+function showEnding(success, culprit){ var box=document.getElementById('ending'); box.style.display='block'; if(success){ box.innerHTML='<h3>Case Closed</h3><p>Through deduction and resolve, you revealed the trick at the River Pier. '+culprit+' was the one hiding behind a Cover\u2011up \u2014 the folio is secured, and London greets the dawn unscathed.</p>'+revealSolution(); } else { box.innerHTML='<h3>Case Lost</h3><p>The fog grew too thick. Your chances ran out, and the courier slipped away. The folio remains missing, and the true culprit melts into London\u2019s endless night. The city wakes uneasy, secrets still at large.</p>'+revealSolution(); } }
+
+/* ===== Buttons & Tabs ===== */
+function wireButtons(){
+  document.getElementById('reset').onclick=function(){ SL=gridState(suspects,locations); SM=gridState(suspects,methods); SV=gridState(suspects,motives); document.getElementById('status').textContent=''; makeTables(); buildInterrogation(); applyClues(); renderAll(); showDerivedCulprit(); };
+  document.getElementById('applyClues').onclick=function(){ applyClues(); renderAll(); checkContradictions(); showDerivedCulprit(); };
+  document.getElementById('check').onclick=function(){ var s=document.getElementById('status'); if(readyToSubmit()){ var g=currentGuess(); var res=scoreGuess(g); if(res.correct){ s.textContent='Grid is a complete, correct mapping. Culprit: '+res.culprit; s.className='mini good'; } else { s.textContent='Grid is complete but not the correct mapping.'; s.className='mini warn'; } } else { s.textContent='You need exactly one \u2713 per row/column in each grid before checking.'; s.className='mini'; } };
+  document.getElementById('submit').onclick=function(){ var status=document.getElementById('status'); if(tries>=MAX_TRIES){ status.textContent='No tries left. Come back tomorrow!'; status.className='mini warn'; showEnding(false,null); return; } if(!readyToSubmit()){ status.textContent='Finish the grid first: exactly one \u2713 per row & column in all three grids.'; status.className='mini'; return; } var g=currentGuess(); var res=scoreGuess(g); tries+=1; guesses.push(g); localStorage.setItem(storeKey,String(tries)); localStorage.setItem(storeGuessesKey,JSON.stringify(guesses)); renderAll(); showDerivedCulprit(); var left=MAX_TRIES-tries; if(res.correct){ status.textContent='Solved! '+tries+'/6. ('+res.matches+'/12 pairings) Culprit: '+res.culprit+'.'; status.className='mini good'; document.getElementById('share').disabled=false; showEnding(true,res.culprit); } else { status.textContent='Not quite ('+res.matches+'/12 pairings). Culprit (by your grid): '+(res.culprit?res.culprit:'\u2014')+'. '+left+' '+(left===1?'try':'tries')+' left.'; status.className='mini warn'; if(left===0){ document.getElementById('share').disabled=false; showEnding(false,null); } } };
+  document.getElementById('share').onclick=function(){ var last=guesses[guesses.length-1]||currentGuess(); var solved=scoreGuess(last).correct; var msg=shareText(solved,tries,last); try{ navigator.clipboard.writeText(msg).then(function(){ var s=document.getElementById('status'); s.textContent='Copied result to clipboard. Paste anywhere to share!'; s.className='mini good'; }); }catch(e){ prompt('Copy your result:', msg); } };
+  // Tabs
+  var tabI=document.getElementById('tabInterrogation'); var tabB=document.getElementById('tabBoard');
+  tabI.onclick=function(){ document.getElementById('interrogationRow').classList.remove('hidden'); document.getElementById('boardRow').classList.add('hidden'); tabI.classList.add('active'); tabB.classList.remove('active'); };
+  tabB.onclick=function(){ document.getElementById('interrogationRow').classList.add('hidden'); document.getElementById('boardRow').classList.remove('hidden'); tabB.classList.add('active'); tabI.classList.remove('active'); };
+}
+
+/* ===== Page Render ===== */
+function makeTables(){ makeTable('Suspect × Location',suspects,locations,SL,'gridSL'); makeTable('Suspect × Method',suspects,methods,SM,'gridSM'); makeTable('Suspect × Motive',suspects,motives,SV,'gridSV'); makeMegaTable('megaGrid'); }
+function buildAll(){ buildInterrogation(); }
+function renderAll(){ renderGrid(SL,'gridSL'); renderGrid(SM,'gridSM'); renderGrid(SV,'gridSV'); renderMega(); document.getElementById('tries').textContent='Try '+tries+' of '+MAX_TRIES; showRoles(); renderInterrogation(); }
+
+// Boot
+makeTables(); buildAll(); applyClues(); renderAll(); showDerivedCulprit(); wireButtons(); if(tries>=MAX_TRIES){ document.getElementById('share').disabled=false; }
+
+/* ===== Console self-tests ===== */
+(function(){ try{
+  // 1) Solution must score 12/12 and culprit Lin
+  var g={}; for(var i=0;i<suspects.length;i++){ var s=suspects[i]; g[s]=[solution[s][0],solution[s][1],solution[s][2]]; } var res=scoreGuess(g); console.assert(res.correct===true && res.matches===12, 'Test: solution 12/12'); console.assert(res.culprit==='Lin','Test: culprit is Lin');
+  // 2) setCell exclusivity
+  var t=gridState(suspects,locations); setCell(t,'Harper','Museum',1,suspects,locations); var rowOk=true; for(var i2=0;i2<locations.length;i2++){ var c=locations[i2]; if(c!=='Museum' && t['Harper'][c]!==-1) rowOk=false; } var colOk=true; for(var j2=0;j2<suspects.length;j2++){ var ss=suspects[j2]; if(ss!=='Harper' && t[ss]['Museum']!==-1) colOk=false; } console.assert(rowOk && colOk,'Test: exclusivity');
+  // 3) derivedCulprit when unknown
+  var g2={'Harper':[null,null,null],'Lin':[null,null,null],'Doyle':[null,null,null],'Sutton':[null,null,null]}; console.assert(derivedCulprit(g2)===null,'Test: derivedCulprit null');
+  // 4) shareText has proper newlines
+  var txt=shareText(true,1,g); console.assert(txt.indexOf('\n')>-1,'Test: shareText uses newlines');
+  // 5) mega grid cell count stays correct
+  var expected= suspects.length*(locations.length+methods.length+motives.length); var got=document.querySelectorAll('#megaGrid td.cell').length; console.assert(got===expected,'Test: mega grid cells '+got+' == '+expected);
+  // 6) interrogation selectChoice sets row to unique YES
+  selectChoice('L','Harper','Museum');
+  var ones=0; for(var k in SL['Harper']) if(SL['Harper'][k]===1) ones++; console.assert(ones===1 && SL['Harper']['Museum']===1,'Test: interrogation row exclusivity');
+  // 7) functions exist
+  console.assert(typeof renderAll==='function' && typeof wireButtons==='function','Test: functions present');
+} catch(e){ console.error('Self-tests error:', e); }})();
+</script>
+</body>
+</html>
