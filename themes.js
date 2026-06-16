@@ -25,6 +25,8 @@
       title: 'Fog on the Thames',
       tagline: 'Gaslit London · a vanished royal courier',
       intro: 'London lies hushed beneath a shroud of fog. A royal courier has vanished along the river’s edge — and with him a sealed folio said to topple ministries. Four familiar silhouettes were seen in the mist. One of them is hiding behind a Cover‑up.',
+      avatars: ['🎩', '🧥', '🕵️', '👒'],
+      roles: ['a society gentleman', 'a dockside trader', 'a Yard inspector', 'a lady of the court'],
       guilt: { cat: 3, value: 3 }, // motive = Cover-up
       categories: [
         { id: 'suspect', label: 'Suspect', values: ['Harper', 'Lin', 'Doyle', 'Sutton'], subj: '{v}' },
@@ -41,6 +43,8 @@
       title: 'The Long Goodbye',
       tagline: '1940s Los Angeles · a studio fixer’s last night',
       intro: 'Rain on Sunset, neon bleeding into the gutters. A studio fixer turned up dead and a reel of someone’s secrets is missing. Four players from the back lots had reasons to be there. One of them was just covering their tracks.',
+      avatars: ['🕵️', '💃', '🎙️', '🚬'],
+      roles: ['a private eye', 'a fading starlet', 'a radio man', 'a studio fixer'],
       guilt: { cat: 3, value: 3 }, // motive = Cover-up
       categories: [
         { id: 'suspect', label: 'Suspect', values: ['Marlowe', 'Vance', 'Reyes', 'Calloway'], subj: '{v}' },
@@ -57,6 +61,8 @@
       title: 'Silence on Station Kepler',
       tagline: 'Orbital research station · a sabotaged airlock',
       intro: 'Aboard Station Kepler, the comms went dark for eleven minutes and the research core was wiped. Four crew were awake during the blackout. The logs were scrubbed by someone covering their trail.',
+      avatars: ['🧑🏾‍🚀', '🧑‍🚀', '🧑🏽‍🔬', '🧑🏼‍✈️'],
+      roles: ['mission commander', 'systems engineer', 'lead researcher', 'flight officer'],
       guilt: { cat: 3, value: 3 }, // motive = Cover-up
       categories: [
         { id: 'suspect', label: 'Crew', values: ['Okafor', 'Petrov', 'Singh', 'Bauer'], subj: '{v}' },
@@ -73,6 +79,8 @@
       title: 'A Death at Ravenswood',
       tagline: 'English country manor · the will has gone missing',
       intro: 'A storm has cut off Ravenswood Hall, and the late lord’s will has vanished from the study. Four guests remained after midnight, each with a story that does not quite hold. One of them is simply covering up.',
+      avatars: ['🎩', '👰', '🧓', '🤵'],
+      roles: ['the estranged heir', 'the late lord’s widow', 'the family solicitor', 'the head butler'],
       guilt: { cat: 3, value: 3 }, // motive = Cover-up
       categories: [
         { id: 'suspect', label: 'Guest', values: ['Ashby', 'Crane', 'Wren', 'Holt'], subj: '{v}' },

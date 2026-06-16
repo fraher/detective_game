@@ -2,148 +2,172 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <title>Daily Detective — a new deduction case every day</title>
 <meta name="description" content="Daily Detective: a free logic deduction puzzle. Crack a fresh, uniquely-solvable case every day. No two days are ever the same."/>
 <style>
   :root{
-    --bg:#0f1115;--fg:#e8ecf1;--muted:#9aa4b2;--card:#171a21;--line:#222;
-    --accent:#53a7ff;--yes:#2ecc71;--no:#e74c3c;--unknown:#262b35;
-    --culprit:#ff4757;--good:#2ecc71;--warn:#ffd166;
+    --bg:#0e1016;--card:#181c26;--card2:#1f2433;--line:#2a3040;--fg:#eef2f7;--muted:#98a2b3;
+    --accent:#6aa6ff;--gold:#ffce5c;--green:#37d39a;--red:#ff6b7a;
   }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial}
-  a{color:var(--accent)}
-  header{padding:14px 20px;border-bottom:1px solid var(--line);background:#0d0f13;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px}
-  header h1{margin:0;font-size:20px;letter-spacing:.3px}
-  header .sub{color:var(--muted);font-size:13px}
-  main{max-width:1040px;margin:18px auto;padding:0 16px}
-  .pillbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 8px}
-  .pill{padding:3px 10px;border-radius:999px;background:#0e1117;border:1px solid #2b3240;color:#cdd6e3;font-size:13px}
-  .pill.diff{font-weight:700}
-  .pill.timer{font-variant-numeric:tabular-nums}
-  .brief{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
-  .brief p{margin:0}
-  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
-  button{background:var(--accent);border:0;color:#001326;font-weight:700;padding:9px 13px;border-radius:9px;cursor:pointer;font-size:14px}
-  button:disabled{opacity:.45;cursor:not-allowed}
-  button.secondary{background:#232a35;color:#cbd5e1;border:1px solid #2f3947}
-  button.ghost{background:transparent;color:#9fbfff;border:1px dashed #2f3947}
-  button.danger{background:#3a1d22;color:#ffb3bd;border:1px solid #5a2730}
-  .layout{display:grid;gap:16px}
-  @media(min-width:900px){.layout{grid-template-columns:1.4fr 1fr}}
-  .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-  .panel h3{margin:0 0 10px;font-size:15px;color:#cbd5e1}
-  /* grids */
-  .grids{display:flex;flex-wrap:wrap;gap:14px}
-  .gridwrap{flex:1 1 280px}
-  .gridwrap .cap{font-size:12px;color:var(--muted);margin:0 0 4px 2px}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:radial-gradient(1200px 500px at 50% -10%,#1b2030 0%,transparent 60%),var(--bg);
+       color:var(--fg);font:16px/1.45 -apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  button{font-family:inherit}
+  .wrap{max-width:980px;margin:0 auto;padding-bottom:96px}
+  /* top bar */
+  .top{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;
+       padding:12px 16px;background:rgba(14,16,22,.86);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .ttl{font-weight:800;font-size:16px;line-height:1.15}
+  .ttl small{display:block;color:var(--muted);font-weight:600;font-size:11px;letter-spacing:.4px;margin-top:1px}
+  .tstats{display:flex;gap:6px;align-items:center}
+  .stat{display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--line);
+        border-radius:999px;padding:5px 9px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+  .stat.diff{color:var(--gold)}
+  .menu{background:var(--card);border:1px solid var(--line);color:var(--fg);border-radius:10px;width:34px;height:32px;font-size:16px;cursor:pointer}
+  /* ad slots */
+  .adslot{margin:12px 16px;min-height:90px;border:1px dashed #2f3947;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#5b6678;font-size:12px;letter-spacing:.5px}
+  /* brief */
+  .brief{margin:12px 16px 0;color:var(--muted);font-size:13.5px}
+  .brief b{color:var(--fg)}
+  /* suspect rail */
+  .rail{display:flex;gap:10px;overflow-x:auto;padding:14px 16px 4px;scrollbar-width:none}
+  .rail::-webkit-scrollbar{display:none}
+  .face{flex:0 0 auto;width:62px;text-align:center;background:none;border:0;cursor:pointer;padding:0}
+  .ava{width:58px;height:58px;border-radius:18px;background:var(--card2);border:1px solid var(--line);
+       display:flex;align-items:center;justify-content:center;font-size:30px;position:relative;transition:.15s;margin:0 auto}
+  .face.active .ava{border-color:var(--accent);box-shadow:0 0 0 3px rgba(106,166,255,.25)}
+  .face .nm{font-size:11px;margin-top:5px;color:var(--muted);font-weight:600}
+  .face.active .nm{color:var(--fg)}
+  .dot{position:absolute;right:-4px;top:-4px;width:18px;height:18px;border-radius:50%;
+       font-size:11px;font-weight:900;display:none;align-items:center;justify-content:center;border:2px solid var(--bg)}
+  .dot.full{display:flex;background:var(--green);color:#04241a}
+  .dot.part{display:flex;background:var(--gold);color:#3a2a00}
+  /* layout */
+  .cols{display:grid;gap:14px;padding:0 16px;grid-template-columns:1fr}
+  @media(min-width:900px){.cols{grid-template-columns:1.25fr .9fr;align-items:start}}
+  /* suspect card */
+  .card{background:linear-gradient(180deg,var(--card),#15192322);border:1px solid var(--line);border-radius:20px;
+        padding:16px 16px 12px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .who{display:flex;align-items:center;gap:12px}
+  .who .big{width:52px;height:52px;border-radius:15px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:28px;border:1px solid var(--line)}
+  .who h2{margin:0;font-size:20px}
+  .who p{margin:1px 0 0;color:var(--muted);font-size:12.5px}
+  .seg{margin-top:14px}
+  .seg .lab{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;letter-spacing:.8px;color:var(--muted);text-transform:uppercase;margin:0 2px 8px}
+  .row{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{flex:1 1 calc(50% - 8px);min-height:48px;display:flex;align-items:center;justify-content:center;gap:6px;
+        background:var(--card2);border:1px solid var(--line);border-radius:13px;font-weight:700;font-size:14px;color:var(--fg);
+        padding:6px 8px;cursor:pointer;transition:.1s;user-select:none}
+  .chip .mk{font-size:13px;display:none}
+  .chip.on{background:linear-gradient(180deg,#1b3b6b,#16315a);border-color:var(--accent);color:#cfe2ff}
+  .chip.on .mk{display:inline;color:var(--green)}
+  .chip.off{opacity:.42;text-decoration:line-through;border-style:dashed}
+  .chip.off .mk{display:inline;color:var(--red)}
+  .chip.guilt.on{background:linear-gradient(180deg,#5a1f2a,#46101a);border-color:var(--red);color:#ffd7dc}
+  .chip.guilt.on .mk{display:inline;color:var(--gold)}
+  .hintline{margin:11px 2px 0;color:var(--muted);font-size:11.5px;text-align:center}
+  /* side panel */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .panel>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;padding:13px 15px;font-weight:700;font-size:14px;cursor:pointer}
+  .panel>summary::-webkit-details-marker{display:none}
+  .panel .cnt{color:var(--muted);font-weight:600;font-size:12px}
+  .panel ol{margin:0;padding:2px 16px 14px 32px}
+  .panel ol li{margin:7px 0;color:#d7deea;font-size:13.5px}
+  .nbtn{display:block;width:calc(100% - 32px);margin:0 16px 14px;background:#10131c;border:1px dashed var(--line);
+        color:#cfe2ff;border-radius:12px;padding:12px;font-weight:700;font-size:13.5px;cursor:pointer}
+  /* bottom action bar */
+  .bar{position:fixed;left:0;right:0;bottom:0;z-index:6;max-width:980px;margin:0 auto;display:flex;gap:8px;
+       padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:rgba(14,16,22,.94);
+       backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+  .bar button{border:0;border-radius:13px;font-weight:800;font-size:14px;padding:14px 12px;cursor:pointer}
+  .bar .ghost{flex:0 0 auto;background:var(--card2);color:#cdd6e3;border:1px solid var(--line)}
+  .bar .go{flex:1;background:linear-gradient(180deg,#ffd470,#ffb43d);color:#3a2400}
+  .bar .go:disabled{filter:grayscale(.6) brightness(.7);cursor:not-allowed}
+  /* notebook grids */
+  .grids{display:flex;flex-wrap:wrap;gap:12px}
+  .gridwrap{flex:1 1 240px}
+  .gridwrap .cap{font-size:11px;color:var(--muted);margin:0 0 4px 2px}
   table{border-collapse:separate;border-spacing:0;width:100%;background:#111318;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-  th,td{border-bottom:1px solid #1d212a;border-right:1px solid #1d212a;text-align:center;font-size:12px}
-  th{background:#12151b;font-weight:600;color:#c3ccd9;padding:6px 4px;line-height:1.15}
+  th,td{border-bottom:1px solid #1d212a;border-right:1px solid #1d212a;text-align:center;font-size:11px}
+  th{background:#12151b;color:#c3ccd9;padding:5px 3px;line-height:1.1}
   td{padding:0}
-  tr:last-child td,tr:last-child th{border-bottom:0}
-  td:last-child,th:last-child{border-right:0}
-  th.rowhdr{text-align:right;padding-right:8px;white-space:nowrap}
-  .cell{width:100%;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;font-weight:700;font-size:16px;color:var(--muted)}
-  .cell.y{background:rgba(46,204,113,.18);color:var(--yes)}
-  .cell.n{background:rgba(231,76,60,.13);color:var(--no)}
-  .cell.u:hover{background:#1b2230}
-  .cell.hintlock{box-shadow:inset 0 0 0 2px var(--accent)}
-  /* clues + tracker */
-  ol.clues{margin:0;padding-left:20px}
-  ol.clues li{margin:5px 0;color:#dfe6ef}
-  .tracker{display:grid;gap:8px}
-  .tcard{background:#111318;border:1px solid var(--line);border-radius:9px;padding:8px 10px}
-  .tcard b{color:#fff}
-  .tcard .attrs{color:var(--muted);font-size:13px;margin-top:2px}
-  .tag{display:inline-block;padding:1px 7px;border-radius:999px;font-size:12px;margin-left:6px}
-  .tag.culprit{background:var(--culprit);color:#fff;font-weight:700}
-  .status{min-height:20px;font-size:14px;margin-top:6px}
-  .status.good{color:var(--good)} .status.warn{color:var(--warn)}
-  .ending{margin-top:16px;padding:14px 16px;background:#171a21;border:1px solid var(--line);border-radius:12px;display:none}
-  .ending h3{margin:0 0 6px}
-  .adslot{margin:14px 0;min-height:90px;border:1px dashed #2f3947;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#5b6678;font-size:12px;letter-spacing:.5px}
+  tr:last-child td,tr:last-child th{border-bottom:0}td:last-child,th:last-child{border-right:0}
+  th.rh{text-align:right;padding-right:6px;white-space:nowrap}
+  .cell{height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700;font-size:15px;color:var(--muted)}
+  .cell.y{background:rgba(55,211,154,.18);color:var(--green)}
+  .cell.n{background:rgba(255,107,122,.14);color:var(--red)}
   /* modal */
-  .modal{position:fixed;inset:0;background:rgba(4,6,10,.66);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+  .modal{position:fixed;inset:0;background:rgba(4,6,10,.7);display:none;align-items:flex-end;justify-content:center;z-index:20}
   .modal.open{display:flex}
-  .sheet{background:#141822;border:1px solid #2a3140;border-radius:14px;max-width:460px;width:100%;padding:18px 20px;max-height:86vh;overflow:auto}
-  .sheet h2{margin:0 0 10px;font-size:18px}
-  .sheet .close{float:right}
-  .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;margin:10px 0}
-  .statgrid .n{font-size:24px;font-weight:800}
-  .statgrid .l{font-size:11px;color:var(--muted)}
-  .foot{margin:26px 0 40px;color:var(--muted);font-size:12px;text-align:center}
+  @media(min-width:680px){.modal{align-items:center}}
+  .sheet{background:#141822;border:1px solid #2a3140;border-radius:18px 18px 0 0;max-width:560px;width:100%;
+         padding:18px 20px calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+  @media(min-width:680px){.sheet{border-radius:18px}}
+  .sheet h2{margin:0 0 10px;font-size:19px}
+  .sheet .x{float:right;background:var(--card2);color:#cdd6e3;border:1px solid var(--line);border-radius:10px;padding:6px 11px;font-weight:700;cursor:pointer}
+  .sheet ul{padding-left:18px}.sheet li{margin:6px 0}
+  .menulist{display:grid;gap:8px;margin-top:6px}
+  .menulist button{text-align:left;background:var(--card2);color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:13px 14px;font-weight:700;font-size:14px;cursor:pointer}
+  .menulist button.danger{color:#ffb3bd;background:#2a1418;border-color:#4a2026}
+  .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;margin:12px 0}
+  .statgrid .n{font-size:26px;font-weight:800}.statgrid .l{font-size:11px;color:var(--muted)}
+  .result{text-align:center}
+  .result .em{font-size:46px}
+  .result h2{margin:6px 0 2px}
+  .result .sub{color:var(--muted);font-size:14px}
+  .report{text-align:left;background:#10131c;border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-top:12px}
+  .report li{font-size:13.5px}
+  .bigbtn{width:100%;border:0;border-radius:13px;font-weight:800;font-size:15px;padding:14px;margin-top:12px;cursor:pointer;background:linear-gradient(180deg,#ffd470,#ffb43d);color:#3a2400}
   kbd{background:#0e1117;border:1px solid #2b3240;border-radius:5px;padding:1px 6px;font-size:12px}
+  .toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#10141d;border:1px solid var(--line);
+         color:var(--fg);padding:10px 16px;border-radius:999px;font-size:13px;z-index:30;opacity:0;transition:.25s;pointer-events:none}
+  .toast.show{opacity:1}
 </style>
 </head>
 <body>
-<header>
-  <h1>🕵️ Daily Detective</h1>
-  <span class="sub" id="caseSub">Loading case…</span>
-</header>
-
-<main>
-  <!-- AD SLOT (top leaderboard). Drop your AdSense/Ezoic <ins> here. -->
-  <div class="adslot" id="adTop">ad slot · 728×90</div>
-
-  <div class="pillbar">
-    <span class="pill diff" id="pillDiff">—</span>
-    <span class="pill timer" id="pillTimer">00:00</span>
-    <span class="pill" id="pillStreak">🔥 0</span>
-  </div>
-
-  <div class="brief"><p id="briefText">…</p></div>
-
-  <div class="toolbar">
-    <button id="btnArrest">Make the Arrest</button>
-    <button id="btnHint" class="secondary">Hint</button>
-    <button id="btnHow" class="ghost">How to play</button>
-    <button id="btnStats" class="ghost">Stats</button>
-    <button id="btnNew" class="secondary">New random case</button>
-    <button id="btnShare" class="ghost" disabled>Share</button>
-    <button id="btnGiveUp" class="danger">Give up</button>
-  </div>
-  <div class="status" id="status"></div>
-
-  <div class="layout">
-    <div class="panel">
-      <h3>The Evidence Board</h3>
-      <p class="cap" style="color:var(--muted);font-size:12px;margin:0 0 8px">
-        Tap a cell to cycle <kbd>·</kbd> → <kbd>✓</kbd> → <kbd>✗</kbd>. Marking ✓ rules out the rest of that row &amp; column automatically.
-      </p>
-      <div class="grids" id="grids"></div>
+<div class="wrap">
+  <div class="top">
+    <div class="ttl">🕵️ Daily Detective<small id="caseSub">loading…</small></div>
+    <div class="tstats">
+      <span class="stat diff" id="pillDiff">—</span>
+      <span class="stat" id="pillTimer">⏱ 00:00</span>
+      <span class="stat" id="pillStreak">🔥 0</span>
+      <button class="menu" id="btnMenu" title="Menu">⋯</button>
     </div>
+  </div>
+
+  <!-- AD SLOT (top). Drop AdSense/Ezoic markup here. -->
+  <div class="adslot" id="adTop">ad slot · responsive leaderboard</div>
+
+  <p class="brief" id="briefText">…</p>
+
+  <div class="rail" id="rail"></div>
+
+  <div class="cols">
+    <div class="card" id="card"></div>
     <div>
-      <div class="panel" style="margin-bottom:14px">
-        <h3>Clues</h3>
-        <ol class="clues" id="clues"></ol>
-      </div>
-      <div class="panel">
-        <h3>Case File</h3>
-        <div class="tracker" id="tracker"></div>
-      </div>
+      <details class="panel" id="cluesPanel">
+        <summary>📋 Clues <span class="cnt" id="clueCount"></span></summary>
+        <ol id="clues"></ol>
+      </details>
+      <div style="height:12px"></div>
+      <button class="nbtn" id="btnNotebookSide">📓 Open the Detective’s Notebook (full grid)</button>
+      <!-- AD SLOT (in-content). -->
+      <div class="adslot" id="adSide" style="margin:14px 0 0">ad slot · 300×250</div>
     </div>
-  </div>
-
-  <div class="ending" id="ending"></div>
-
-  <!-- AD SLOT (in-content rectangle). -->
-  <div class="adslot" id="adBottom">ad slot · 300×250</div>
-
-  <p class="foot">
-    A new, uniquely-solvable case every day — no two are ever the same.
-    Your progress and streak are saved on this device only.
-  </p>
-</main>
-
-<!-- Modal -->
-<div class="modal" id="modal">
-  <div class="sheet">
-    <button class="secondary close" id="modalClose">Close</button>
-    <div id="modalBody"></div>
   </div>
 </div>
+
+<div class="bar">
+  <button class="ghost" id="btnHint">💡 Hint</button>
+  <button class="ghost" id="btnNotebook">📓</button>
+  <button class="go" id="btnArrest" disabled>🔒 Make the Arrest</button>
+</div>
+
+<div class="modal" id="modal"><div class="sheet"><button class="x" id="modalClose">Close</button><div id="modalBody"></div></div></div>
+<div class="toast" id="toast"></div>
 
 <script src="themes.js"></script>
 <script src="engine.js"></script>
@@ -152,348 +176,285 @@
   'use strict';
   var E = window.DDEngine, THEMES = window.DD_THEMES;
 
-  /* ---------- Daily selection ---------- */
-  var EPOCH = Date.UTC(2026,0,1); // launch day -> case #1
+  /* ---------- daily selection ---------- */
+  var EPOCH = Date.UTC(2026,0,1);
   function todayIndex(){ return Math.floor((Date.now() - EPOCH)/86400000); }
+  var mode='daily', dayIndex=todayIndex(), randomSeed=null;
+  var puzzle=null, G=null, cats=null, theme=null, activeS=0;
+  var elapsedMs=0, timerStart=null, timerTick=null, hintsUsed=0, finished=false, won=false;
 
-  var mode = 'daily';          // 'daily' | 'random'
-  var dayIndex = todayIndex();
-  var randomSeed = null;
-  var puzzle = null;           // current generated puzzle
-  var G = null;                // player's working grid (engine format)
-  var cats = null;
-  var elapsedMs = 0, timerStart = null, timerTick = null;
-  var hintsUsed = 0, finished = false, won = false;
-
-  function currentSeed(){
-    return mode === 'daily' ? E.hashStr('daily:'+dayIndex)
-                            : (randomSeed >>> 0);
-  }
+  function currentSeed(){ return mode==='daily' ? E.hashStr('daily:'+dayIndex) : (randomSeed>>>0); }
   function currentTheme(){
-    return mode === 'daily' ? THEMES[((dayIndex % THEMES.length)+THEMES.length)%THEMES.length]
-                            : THEMES[Math.floor((randomSeed>>>0)/2654435761*THEMES.length)%THEMES.length];
+    return mode==='daily' ? THEMES[((dayIndex%THEMES.length)+THEMES.length)%THEMES.length]
+                          : THEMES[Math.floor((randomSeed>>>0)/2654435761*THEMES.length)%THEMES.length];
   }
-  function storeKey(){
-    return mode === 'daily' ? 'dd:day:'+dayIndex : 'dd:rnd:'+(randomSeed>>>0);
-  }
+  function storeKey(){ return mode==='daily' ? 'dd:day:'+dayIndex : 'dd:rnd:'+(randomSeed>>>0); }
 
-  /* ---------- Persistence ---------- */
-  function saveProgress(){
-    try{
-      localStorage.setItem(storeKey(), JSON.stringify({
-        G:G, elapsedMs:elapsedMs+nowDelta(), hintsUsed:hintsUsed, finished:finished, won:won
-      }));
-    }catch(e){}
-  }
-  function loadProgress(){
-    try{
-      var raw = localStorage.getItem(storeKey()); if(!raw) return false;
-      var d = JSON.parse(raw);
-      if(d.G) G = d.G;
-      elapsedMs = d.elapsedMs||0; hintsUsed = d.hintsUsed||0;
-      finished = !!d.finished; won = !!d.won;
-      return true;
-    }catch(e){ return false; }
-  }
+  /* ---------- persistence ---------- */
+  function saveProgress(){ try{ localStorage.setItem(storeKey(), JSON.stringify({
+    G:G, elapsedMs:elapsedMs+nowDelta(), hintsUsed:hintsUsed, finished:finished, won:won })); }catch(e){} }
+  function loadProgress(){ try{ var r=localStorage.getItem(storeKey()); if(!r) return;
+    var d=JSON.parse(r); if(d.G) G=d.G; elapsedMs=d.elapsedMs||0; hintsUsed=d.hintsUsed||0; finished=!!d.finished; won=!!d.won; }catch(e){} }
 
-  /* ---------- Stats / streak ---------- */
-  function getStats(){
-    try{ return JSON.parse(localStorage.getItem('dd:stats')||'{}'); }catch(e){ return {}; }
-  }
+  /* ---------- stats ---------- */
+  function getStats(){ try{ return JSON.parse(localStorage.getItem('dd:stats')||'{}'); }catch(e){ return {}; } }
   function setStats(s){ try{ localStorage.setItem('dd:stats', JSON.stringify(s)); }catch(e){} }
-  function recordDailyResult(success){
+  function recordResult(success){
     if(mode!=='daily') return;
-    var s = getStats();
-    if(s.lastResultDay === dayIndex) return; // already recorded today
-    s.played = (s.played||0)+1;
-    if(success){
-      s.wins = (s.wins||0)+1;
-      s.curStreak = (s.lastWinDay === dayIndex-1) ? (s.curStreak||0)+1 : 1;
-      s.lastWinDay = dayIndex;
-      s.maxStreak = Math.max(s.maxStreak||0, s.curStreak);
-    } else {
-      s.curStreak = 0;
-    }
-    s.lastResultDay = dayIndex;
-    setStats(s);
+    var s=getStats(); if(s.lastResultDay===dayIndex) return;
+    s.played=(s.played||0)+1;
+    if(success){ s.wins=(s.wins||0)+1; s.curStreak=(s.lastWinDay===dayIndex-1)?(s.curStreak||0)+1:1; s.lastWinDay=dayIndex; s.maxStreak=Math.max(s.maxStreak||0,s.curStreak); }
+    else { s.curStreak=0; }
+    s.lastResultDay=dayIndex; setStats(s);
   }
-  function streakDisplay(){
-    var s = getStats();
-    var live = (s.lastWinDay===dayIndex || s.lastWinDay===dayIndex-1) ? (s.curStreak||0) : 0;
-    return '🔥 '+live;
-  }
+  function liveStreak(){ var s=getStats(); return (s.lastWinDay===dayIndex||s.lastWinDay===dayIndex-1)?(s.curStreak||0):0; }
 
-  /* ---------- Timer ---------- */
-  function nowDelta(){ return timerStart ? (Date.now()-timerStart) : 0; }
+  /* ---------- timer ---------- */
+  function nowDelta(){ return timerStart?(Date.now()-timerStart):0; }
   function fmt(ms){ var s=Math.floor(ms/1000); return ('0'+Math.floor(s/60)).slice(-2)+':'+('0'+(s%60)).slice(-2); }
-  function startTimer(){
-    if(finished || timerStart) return;
-    timerStart = Date.now();
-    timerTick = setInterval(function(){ document.getElementById('pillTimer').textContent = fmt(elapsedMs+nowDelta()); }, 500);
-  }
-  function stopTimer(){
-    if(timerStart){ elapsedMs += nowDelta(); timerStart=null; }
-    if(timerTick){ clearInterval(timerTick); timerTick=null; }
-    document.getElementById('pillTimer').textContent = fmt(elapsedMs);
-  }
+  function startTimer(){ if(finished||timerStart) return; timerStart=Date.now();
+    timerTick=setInterval(function(){ document.getElementById('pillTimer').textContent='⏱ '+fmt(elapsedMs+nowDelta()); },500); }
+  function stopTimer(){ if(timerStart){ elapsedMs+=nowDelta(); timerStart=null; } if(timerTick){ clearInterval(timerTick); timerTick=null; }
+    document.getElementById('pillTimer').textContent='⏱ '+fmt(elapsedMs); }
 
-  /* ---------- Grid helpers (player board) ---------- */
-  function setYesWithExclusions(a,b,i,j){
-    var N = cats[0].values.length;
-    E.sl(G,a,b,i,j,1);
+  /* ---------- grid logic ---------- */
+  function setYesExcl(a,b,i,j){ var N=cats[0].values.length; E.sl(G,a,b,i,j,1);
     for(var n=0;n<N;n++){ if(n!==j && E.gl(G,a,b,i,n)===0) E.sl(G,a,b,i,n,-1); }
-    for(var m=0;m<N;m++){ if(m!==i && E.gl(G,a,b,m,j)===0) E.sl(G,a,b,m,j,-1); }
-  }
-  function cycle(a,b,i,j){
-    if(finished) return;
-    startTimer();
-    var cur = E.gl(G,a,b,i,j);
-    var next = cur===0?1:(cur===1?-1:0);
-    if(next===1) setYesWithExclusions(a,b,i,j); else E.sl(G,a,b,i,j,next);
-    saveProgress(); renderBoard(); renderTracker();
-  }
+    for(var m=0;m<N;m++){ if(m!==i && E.gl(G,a,b,m,j)===0) E.sl(G,a,b,m,j,-1); } }
+  function derivedAssign(){ var N=cats[0].values.length,out=[null];
+    for(var c=1;c<cats.length;c++){ out[c]=[]; for(var s=0;s<N;s++){ var v=-1; for(var j=0;j<N;j++) if(E.gl(G,0,c,s,j)===1){ v=j; break; } out[c][s]=v; } } return out; }
+  function suspectProgress(s){ var n=0; for(var c=1;c<cats.length;c++){ for(var j=0;j<cats[0].values.length;j++) if(E.gl(G,0,c,s,j)===1){ n++; break; } } return n; }
+  function anchorComplete(){ var N=cats[0].values.length,a=derivedAssign();
+    for(var c=1;c<cats.length;c++){ var seen={}; for(var s=0;s<N;s++){ var v=a[c][s]; if(v<0||seen[v]) return false; seen[v]=1; } } return true; }
+  function isCorrect(){ var a=derivedAssign();
+    for(var s=0;s<cats[0].values.length;s++) for(var c=1;c<cats.length;c++) if(a[c][s]!==puzzle.solution[s][c]) return false; return true; }
 
-  // anchor assignment derived from player's grid: assign[c][s] = valueIdx or -1
-  function derivedAssign(){
-    var N=cats[0].values.length, out=[null];
-    for(var c=1;c<cats.length;c++){ out[c]=[]; for(var s=0;s<N;s++){ var v=-1; for(var j=0;j<N;j++){ if(E.gl(G,0,c,s,j)===1){ v=j; break; } } out[c][s]=v; } }
-    return out;
-  }
-  function anchorComplete(){
-    var N=cats[0].values.length, a=derivedAssign();
-    for(var c=1;c<cats.length;c++){ var seen={}; for(var s=0;s<N;s++){ var v=a[c][s]; if(v<0||seen[v]) return false; seen[v]=1; } }
-    return true;
-  }
-  function isCorrect(){
-    var a=derivedAssign();
-    for(var s=0;s<cats[0].values.length;s++){ for(var c=1;c<cats.length;c++){ if(a[c][s]!==puzzle.solution[s][c]) return false; } }
-    return true;
-  }
+  /* ---------- chip interaction ---------- */
+  function chipTap(c,v){ if(finished) return; startTimer();
+    var cur=E.gl(G,0,c,activeS,v);
+    if(cur===1) E.sl(G,0,c,activeS,v,0); else setYesExcl(0,c,activeS,v);
+    afterChange(); }
+  function chipRuleOut(c,v){ if(finished) return; startTimer();
+    var cur=E.gl(G,0,c,activeS,v);
+    E.sl(G,0,c,activeS,v, cur===-1?0:-1);
+    afterChange(); }
+  function afterChange(){ saveProgress(); renderCard(); renderRail(); renderNotebook(); updateArrest(); }
 
-  /* ---------- Rendering ---------- */
-  function symbol(v){ return v===1?'✓':v===-1?'✗':'·'; }
-  function pairList(){
-    var ps=[]; for(var a=0;a<cats.length;a++) for(var b=a+1;b<cats.length;b++) ps.push([a,b]);
-    // anchor pairs first
-    ps.sort(function(x,y){ return (x[0]===0?0:1)-(y[0]===0?0:1); });
-    return ps;
+  /* ---------- rendering ---------- */
+  function renderMeta(){
+    theme=currentTheme(); cats=theme.categories;
+    document.getElementById('caseSub').textContent =
+      (mode==='daily'?('Case #'+(dayIndex+1)):'Practice')+' · '+theme.title.toUpperCase();
+    document.getElementById('pillDiff').textContent=puzzle.difficulty;
+    document.getElementById('pillTimer').textContent='⏱ '+fmt(elapsedMs);
+    document.getElementById('pillStreak').textContent='🔥 '+liveStreak();
+    document.getElementById('briefText').innerHTML=theme.intro;
   }
-  function buildBoard(){
-    var host=document.getElementById('grids'); host.innerHTML='';
-    pairList().forEach(function(p){
-      var a=p[0], b=p[1], A=cats[a], B=cats[b], N=A.values.length;
-      var wrap=document.createElement('div'); wrap.className='gridwrap';
-      var cap=document.createElement('div'); cap.className='cap'; cap.textContent=A.label+' × '+B.label; wrap.appendChild(cap);
-      var t=document.createElement('table');
-      var thead=document.createElement('thead'), hr=document.createElement('tr');
-      hr.appendChild(document.createElement('th'));
-      for(var j=0;j<N;j++){ var th=document.createElement('th'); th.textContent=B.values[j]; hr.appendChild(th); }
-      thead.appendChild(hr); t.appendChild(thead);
-      var tb=document.createElement('tbody');
-      for(var i=0;i<N;i++){
-        var tr=document.createElement('tr');
-        var rh=document.createElement('th'); rh.className='rowhdr'; rh.textContent=A.values[i]; tr.appendChild(rh);
-        for(var jj=0;jj<N;jj++){
-          var td=document.createElement('td');
-          var div=document.createElement('div'); div.className='cell u';
-          div.dataset.a=a; div.dataset.b=b; div.dataset.i=i; div.dataset.j=jj;
-          (function(a,b,i,j,el){ el.onclick=function(){ cycle(a,b,i,j); }; })(a,b,i,jj,div);
-          td.appendChild(div); tr.appendChild(td);
-        }
-        tb.appendChild(tr);
-      }
-      t.appendChild(tb); wrap.appendChild(t); host.appendChild(wrap);
-    });
-  }
-  function renderBoard(){
-    var cells=document.querySelectorAll('#grids .cell');
-    for(var k=0;k<cells.length;k++){
-      var el=cells[k], v=E.gl(G,+el.dataset.a,+el.dataset.b,+el.dataset.i,+el.dataset.j);
-      el.textContent=symbol(v);
-      el.className='cell '+(v===1?'y':v===-1?'n':'u')+(el.classList.contains('hintlock')?' hintlock':'');
-    }
-  }
-  function renderTracker(){
-    var host=document.getElementById('tracker'); host.innerHTML='';
-    var a=derivedAssign();
+  function renderRail(){
+    var rail=document.getElementById('rail'); rail.innerHTML='';
     for(var s=0;s<cats[0].values.length;s++){
-      var card=document.createElement('div'); card.className='tcard';
-      var parts=[];
-      for(var c=1;c<cats.length;c++){ var v=a[c][s]; parts.push(cats[c].label+': '+(v>=0?cats[c].values[v]:'—')); }
-      var culpritTag = (finished && won && s===puzzle.culprit) ? ' <span class="tag culprit">CULPRIT</span>' : '';
-      card.innerHTML='<b>'+cats[0].values[s]+'</b>'+culpritTag+'<div class="attrs">'+parts.join(' · ')+'</div>';
-      host.appendChild(card);
+      (function(s){
+        var b=document.createElement('button'); b.className='face'+(s===activeS?' active':'');
+        var prog=suspectProgress(s), dotCls=prog===cats.length-1?'dot full':(prog>0?'dot part':'dot');
+        b.innerHTML='<div class="ava">'+(theme.avatars?theme.avatars[s]:'👤')+
+          '<span class="'+dotCls+'">'+(prog===cats.length-1?'✓':'')+'</span></div><div class="nm">'+cats[0].values[s]+'</div>';
+        b.onclick=function(){ activeS=s; renderCard(); renderRail(); };
+        rail.appendChild(b);
+      })(s);
     }
+  }
+  function renderCard(){
+    var card=document.getElementById('card'); card.innerHTML='';
+    var icons=['','📍','🛠️','🎭'], labels=['','Where','How','Why'];
+    var who=document.createElement('div'); who.className='who';
+    who.innerHTML='<div class="big">'+(theme.avatars?theme.avatars[activeS]:'👤')+'</div>'+
+      '<div><h2>'+cats[0].values[activeS]+'</h2><p>'+((theme.roles&&theme.roles[activeS])||'a suspect')+'</p></div>';
+    card.appendChild(who);
+    for(var c=1;c<cats.length;c++){
+      (function(c){
+        var seg=document.createElement('div'); seg.className='seg';
+        seg.innerHTML='<div class="lab"><span>'+(icons[c]||'•')+'</span> '+(labels[c]||cats[c].label)+'</div>';
+        var row=document.createElement('div'); row.className='row';
+        for(var v=0;v<cats[c].values.length;v++){
+          (function(v){
+            var val=E.gl(G,0,c,activeS,v);
+            var isGuilt=(c===theme.guilt.cat && v===theme.guilt.value);
+            var chip=document.createElement('div');
+            chip.className='chip'+(isGuilt?' guilt':'')+(val===1?' on':(val===-1?' off':''));
+            chip.innerHTML='<span class="mk">'+(val===1?(isGuilt?'★':'✓'):(val===-1?'✗':''))+'</span>'+cats[c].values[v];
+            chip.onclick=function(){ chipTap(c,v); };
+            chip.oncontextmenu=function(e){ e.preventDefault(); chipRuleOut(c,v); };
+            var tmr=null;
+            chip.addEventListener('touchstart',function(){ tmr=setTimeout(function(){ tmr=null; chipRuleOut(c,v); }, 420); },{passive:true});
+            chip.addEventListener('touchend',function(e){ if(tmr){ clearTimeout(tmr); } else { e.preventDefault(); } });
+            chip.addEventListener('touchmove',function(){ if(tmr){ clearTimeout(tmr); tmr=null; } });
+            row.appendChild(chip);
+          })(v);
+        }
+        seg.appendChild(row); card.appendChild(seg);
+      })(c);
+    }
+    var hint=document.createElement('p'); hint.className='hintline';
+    hint.textContent='Tap to choose ✓ · long-press to rule out ✗ · the rest update automatically';
+    card.appendChild(hint);
   }
   function renderClues(){
+    document.getElementById('clueCount').textContent='('+puzzle.clueText.length+')';
     var ol=document.getElementById('clues'); ol.innerHTML='';
-    puzzle.clueText.forEach(function(txt){ var li=document.createElement('li'); li.textContent=txt; ol.appendChild(li); });
+    puzzle.clueText.forEach(function(t){ var li=document.createElement('li'); li.textContent=t; ol.appendChild(li); });
+    document.getElementById('cluesPanel').open = window.innerWidth>=900;
   }
-  function renderMeta(){
-    var th=currentTheme();
-    var label = mode==='daily' ? ('Case #'+(dayIndex+1)) : 'Practice case';
-    document.getElementById('caseSub').textContent = label+' — '+th.title+' · '+th.tagline;
-    document.getElementById('pillDiff').textContent = puzzle.difficulty;
-    document.getElementById('pillStreak').textContent = streakDisplay();
-    document.getElementById('pillTimer').textContent = fmt(elapsedMs);
-    document.getElementById('briefText').textContent = th.intro;
-  }
+  function updateArrest(){ document.getElementById('btnArrest').disabled = finished || !anchorComplete(); }
 
-  /* ---------- End states ---------- */
-  function setStatus(msg, cls){ var s=document.getElementById('status'); s.textContent=msg||''; s.className='status '+(cls||''); }
-  function endWin(){
-    finished=true; won=true; stopTimer();
-    recordDailyResult(true); saveProgress();
-    document.getElementById('btnShare').disabled=false;
-    document.getElementById('pillStreak').textContent=streakDisplay();
-    var box=document.getElementById('ending'); box.style.display='block';
-    box.innerHTML='<h3>Case closed.</h3><p>You unmasked <b>'+cats[0].values[puzzle.culprit]+'</b> — '+
-      cats[3].label.toLowerCase()+': '+cats[3].values[puzzle.solution[puzzle.culprit][3]]+
-      '. Solved in '+fmt(elapsedMs)+(hintsUsed?(' with '+hintsUsed+' hint'+(hintsUsed>1?'s':'')):' with no hints')+'.</p>'+
-      officialReport();
-    renderTracker(); setStatus('Solved! '+fmt(elapsedMs), 'good');
+  /* ---------- notebook (full grid) ---------- */
+  function pairList(){ var ps=[]; for(var a=0;a<cats.length;a++) for(var b=a+1;b<cats.length;b++) ps.push([a,b]);
+    ps.sort(function(x,y){ return (x[0]===0?0:1)-(y[0]===0?0:1); }); return ps; }
+  function notebookHTML(){
+    var html='<div class="grids">';
+    pairList().forEach(function(p){
+      var a=p[0],b=p[1],A=cats[a],B=cats[b],N=A.values.length;
+      html+='<div class="gridwrap"><div class="cap">'+A.label+' × '+B.label+'</div><table><thead><tr><th></th>';
+      for(var j=0;j<N;j++) html+='<th>'+B.values[j]+'</th>';
+      html+='</tr></thead><tbody>';
+      for(var i=0;i<N;i++){ html+='<tr><th class="rh">'+A.values[i]+'</th>';
+        for(var jj=0;jj<N;jj++){ var v=E.gl(G,a,b,i,jj);
+          html+='<td><div class="cell '+(v===1?'y':v===-1?'n':'')+'" data-a="'+a+'" data-b="'+b+'" data-i="'+i+'" data-j="'+jj+'">'+(v===1?'✓':v===-1?'✗':'·')+'</div></td>'; }
+        html+='</tr>'; }
+      html+='</tbody></table></div>';
+    });
+    return html+'</div>';
   }
-  function endLoss(){
-    finished=true; won=false; stopTimer();
-    recordDailyResult(false); saveProgress();
-    document.getElementById('btnShare').disabled=false;
-    document.getElementById('pillStreak').textContent=streakDisplay();
-    revealSolutionOnBoard();
-    var box=document.getElementById('ending'); box.style.display='block';
-    box.innerHTML='<h3>The trail goes cold.</h3><p>The real culprit was <b>'+cats[0].values[puzzle.culprit]+
-      '</b>. Here is what truly happened:</p>'+officialReport();
-    renderBoard(); renderTracker();
+  function openNotebook(){
+    openModal('<h2>Detective’s Notebook</h2><p style="color:var(--muted);font-size:13px;margin:0 0 10px">'+
+      'The full deduction grid. Tap any cell to cycle · → ✓ → ✗. Cross-reference to crack the hard cases.</p>'+notebookHTML());
+    wireNotebookCells();
   }
-  function officialReport(){
-    var out='<ul style="margin:8px 0 0;padding-left:18px">';
-    for(var s=0;s<cats[0].values.length;s++){
-      var parts=[];
-      for(var c=1;c<cats.length;c++) parts.push(cats[c].label+': '+cats[c].values[puzzle.solution[s][c]]);
-      out+='<li><b>'+cats[0].values[s]+'</b> — '+parts.join(', ')+'</li>';
-    }
-    return out+'</ul>';
+  function wireNotebookCells(){
+    var cells=document.querySelectorAll('#modalBody .cell');
+    for(var k=0;k<cells.length;k++){ (function(el){ el.onclick=function(){ if(finished) return; startTimer();
+      var a=+el.dataset.a,b=+el.dataset.b,i=+el.dataset.i,j=+el.dataset.j,cur=E.gl(G,a,b,i,j),nx=cur===0?1:(cur===1?-1:0);
+      if(nx===1) setYesExcl(a,b,i,j); else E.sl(G,a,b,i,j,nx);
+      saveProgress(); renderCard(); renderRail(); updateArrest();
+      el.outerHTML=el.outerHTML; // refresh handled below
+      renderNotebookInline(); }; })(cells[k]); }
   }
-  function revealSolutionOnBoard(){
-    var N=cats[0].values.length;
-    G=E.emptyGrid(cats);
-    // set all true links from the solution across every pair
-    for(var s=0;s<N;s++){
-      for(var c1=0;c1<cats.length;c1++){ for(var c2=c1+1;c2<cats.length;c2++){
-        E.sl(G,c1,c2,puzzle.solution[s][c1],puzzle.solution[s][c2],1);
-      }}
-    }
+  function renderNotebookInline(){ // re-render cells in open modal without losing scroll
+    var body=document.getElementById('modalBody'); if(!body.querySelector('.grids')) return;
+    var cells=body.querySelectorAll('.cell');
+    cells.forEach(function(el){ var v=E.gl(G,+el.dataset.a,+el.dataset.b,+el.dataset.i,+el.dataset.j);
+      el.textContent=v===1?'✓':v===-1?'✗':'·'; el.className='cell '+(v===1?'y':v===-1?'n':''); });
   }
+  function renderNotebook(){ renderNotebookInline(); }
 
-  /* ---------- Actions ---------- */
-  function makeArrest(){
-    if(finished) return;
-    if(!anchorComplete()){ setStatus('Fill the Suspect grids first — exactly one ✓ per row and column.', 'warn'); return; }
-    if(isCorrect()) endWin();
-    else setStatus('The evidence doesn’t hold together. Re-examine the clues.', 'warn');
+  /* ---------- actions ---------- */
+  function giveHint(){ if(finished) return; startTimer();
+    var N=cats[0].values.length,opts=[];
+    for(var s=0;s<N;s++) for(var c=1;c<cats.length;c++){ var v=puzzle.solution[s][c]; if(E.gl(G,0,c,s,v)!==1) opts.push([c,s,v]); }
+    if(!opts.length){ toast('Nothing left to reveal — make the arrest!'); return; }
+    var p=opts[Math.floor(Math.random()*opts.length)]; setYesExcl(0,p[0],p[1],p[2]); hintsUsed++;
+    activeS=p[1]; afterChange(); renderRail(); toast('Hint revealed ('+hintsUsed+' used)'); }
+  function makeArrest(){ if(finished||!anchorComplete()) return;
+    if(isCorrect()) endGame(true); else toast('The evidence doesn’t hold together — re-check the clues.'); }
+  function endGame(success){
+    finished=true; won=success; stopTimer(); recordResult(success); saveProgress();
+    document.getElementById('pillStreak').textContent='🔥 '+liveStreak();
+    if(!success) revealOnBoard();
+    renderCard(); renderRail(); updateArrest();
+    showResult();
   }
-  function giveHint(){
-    if(finished) return;
-    startTimer();
-    // find an anchor cell that is solution-true but not yet marked ✓
-    var N=cats[0].values.length, opts=[];
-    for(var s=0;s<N;s++){ for(var c=1;c<cats.length;c++){ var v=puzzle.solution[s][c]; if(E.gl(G,0,c,s,v)!==1) opts.push([0,c,s,v]); } }
-    if(!opts.length){ setStatus('Nothing left to hint — make the arrest!', ''); return; }
-    var pick=opts[Math.floor(Math.random()*opts.length)];
-    setYesWithExclusions(pick[0],pick[1],pick[2],pick[3]);
-    hintsUsed++; saveProgress(); renderBoard(); renderTracker();
-    setStatus('Hint revealed. ('+hintsUsed+' used)', 'warn');
-  }
-  function giveUp(){
-    if(finished) return;
-    openModal('<h2>Give up on this case?</h2><p>The solution will be revealed and your daily streak will reset.</p>'+
-      '<div class="toolbar"><button id="confirmGiveUp" class="danger">Reveal solution</button>'+
-      '<button id="cancelGiveUp" class="secondary">Keep trying</button></div>');
-    document.getElementById('confirmGiveUp').onclick=function(){ closeModal(); endLoss(); };
-    document.getElementById('cancelGiveUp').onclick=closeModal;
+  function revealOnBoard(){ var N=cats[0].values.length; G=E.emptyGrid(cats);
+    for(var s=0;s<N;s++) for(var c1=0;c1<cats.length;c1++) for(var c2=c1+1;c2<cats.length;c2++)
+      E.sl(G,c1,c2,puzzle.solution[s][c1],puzzle.solution[s][c2],1); }
+  function reportHTML(){ var out='<ul style="margin:6px 0 0;padding-left:18px">';
+    for(var s=0;s<cats[0].values.length;s++){ var parts=[];
+      for(var c=1;c<cats.length;c++) parts.push(cats[c].values[puzzle.solution[s][c]]);
+      out+='<li><b>'+cats[0].values[s]+'</b> — '+parts.join(' · ')+'</li>'; }
+    return out+'</ul>'; }
+  function showResult(){
+    var culprit=cats[0].values[puzzle.culprit];
+    var head = won
+      ? '<div class="em">🎉</div><h2>Case closed.</h2><div class="sub">You unmasked <b>'+culprit+'</b> in '+fmt(elapsedMs)+(hintsUsed?(' · '+hintsUsed+' hint'+(hintsUsed>1?'s':'')):' · no hints')+'</div>'
+      : '<div class="em">🌫️</div><h2>The trail goes cold.</h2><div class="sub">The real culprit was <b>'+culprit+'</b>.</div>';
+    openModal('<div class="result">'+head+'<div class="report"><b>The official report</b>'+reportHTML()+'</div>'+
+      '<button class="bigbtn" id="shareBtn">📋 Share result</button>'+
+      (mode==='daily'?'<button class="bigbtn" id="againBtn" style="background:var(--card2);color:#cfe2ff;margin-top:8px">🎲 Play a random case</button>'
+                     :'<button class="bigbtn" id="againBtn" style="background:var(--card2);color:#cfe2ff;margin-top:8px">🎲 Another random case</button>')+'</div>');
+    document.getElementById('shareBtn').onclick=shareResult;
+    document.getElementById('againBtn').onclick=function(){ closeModal(); newRandom(); };
   }
   function shareResult(){
-    var th=currentTheme();
-    var label = mode==='daily' ? ('Daily Detective #'+(dayIndex+1)) : 'Daily Detective (practice)';
-    var line = won
-      ? ('Solved ✓ in '+fmt(elapsedMs)+(hintsUsed?(' · 🔍 '+hintsUsed+' hint'+(hintsUsed>1?'s':'')):' · 🟢 no hints'))
-      : 'Unsolved ✗';
-    var streak = mode==='daily' ? ('\n🔥 streak '+(getStats().curStreak||0)) : '';
-    var msg = '🕵️ '+label+' — '+th.title+'\n'+line+'\nDifficulty: '+puzzle.difficulty+streak+'\nplay: '+location.origin+location.pathname+'\n#DailyDetective';
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(msg).then(function(){ setStatus('Result copied to clipboard — paste anywhere!', 'good'); },
-        function(){ prompt('Copy your result:', msg); });
-    } else { prompt('Copy your result:', msg); }
+    var label=mode==='daily'?('Daily Detective #'+(dayIndex+1)):'Daily Detective (practice)';
+    var line=won?('Solved ✓ in '+fmt(elapsedMs)+(hintsUsed?(' · 🔍 '+hintsUsed+' hint'+(hintsUsed>1?'s':'')):' · 🟢 no hints')):'Unsolved ✗';
+    var streak=mode==='daily'?('\n🔥 streak '+liveStreak()):'';
+    var msg='🕵️ '+label+' — '+theme.title+'\n'+line+'\nDifficulty: '+puzzle.difficulty+streak+'\n'+location.origin+location.pathname+'\n#DailyDetective';
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(function(){ toast('Result copied to clipboard!'); },function(){ prompt('Copy:',msg); });
+    else prompt('Copy:',msg);
   }
 
-  /* ---------- Modal ---------- */
+  /* ---------- modal + menu + toast ---------- */
   function openModal(html){ document.getElementById('modalBody').innerHTML=html; document.getElementById('modal').classList.add('open'); }
   function closeModal(){ document.getElementById('modal').classList.remove('open'); }
-  function showHow(){
-    openModal('<h2>How to play</h2>'+
-      '<p>Every clue is true. Using only logic, deduce which <b>'+cats[1].label.toLowerCase()+'</b>, <b>'+
-      cats[2].label.toLowerCase()+'</b> and <b>'+cats[3].label.toLowerCase()+'</b> belongs to each suspect.</p>'+
-      '<ul><li>Tap a grid cell to cycle <kbd>·</kbd> → <kbd>✓</kbd> → <kbd>✗</kbd>.</li>'+
-      '<li>Marking ✓ auto-marks ✗ across the rest of that row and column.</li>'+
-      '<li>Cross-reference the smaller grids to chain deductions together.</li>'+
-      '<li>The culprit is the suspect with the <b>Cover-up</b> motive.</li>'+
-      '<li>There is always exactly <b>one</b> logically provable solution — no guessing needed.</li></ul>'+
-      '<p>Press <b>Make the Arrest</b> when the Suspect grids are complete.</p>');
-  }
-  function showStats(){
-    var s=getStats();
-    var wr = s.played ? Math.round(100*(s.wins||0)/s.played) : 0;
-    openModal('<h2>Your record</h2>'+
-      '<div class="statgrid">'+
+  var toastT=null;
+  function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+    if(toastT) clearTimeout(toastT); toastT=setTimeout(function(){ t.classList.remove('show'); },2200); }
+  function showHow(){ openModal('<h2>How to play</h2>'+
+    '<p>Every clue is true. Using only logic, work out each suspect’s <b>where</b>, <b>how</b> and <b>why</b>.</p>'+
+    '<ul><li><b>Tap</b> a chip to choose it (✓). The rest of that group is ruled out for you.</li>'+
+    '<li><b>Long-press</b> (or right-click) a chip to rule it out (✗) yourself.</li>'+
+    '<li>Switch suspects from the row of faces up top.</li>'+
+    '<li>Stuck on a hard case? Open the <b>Notebook</b> for the full cross-grid.</li>'+
+    '<li>The culprit is whoever has the <b>Cover-up</b> motive.</li>'+
+    '<li>There’s always exactly <b>one</b> provable solution — no guessing.</li></ul>'+
+    '<p>Hit <b>Make the Arrest</b> once every suspect is assigned.</p>'); }
+  function showStats(){ var s=getStats(); var wr=s.played?Math.round(100*(s.wins||0)/s.played):0;
+    openModal('<h2>Your record</h2><div class="statgrid">'+
       '<div><div class="n">'+(s.played||0)+'</div><div class="l">Played</div></div>'+
       '<div><div class="n">'+wr+'%</div><div class="l">Win rate</div></div>'+
       '<div><div class="n">'+(s.curStreak||0)+'</div><div class="l">Streak</div></div>'+
-      '<div><div class="n">'+(s.maxStreak||0)+'</div><div class="l">Best</div></div>'+
-      '</div><p style="color:var(--muted);font-size:13px">Stats are stored on this device only.</p>');
+      '<div><div class="n">'+(s.maxStreak||0)+'</div><div class="l">Best</div></div></div>'+
+      '<p style="color:var(--muted);font-size:13px">Saved on this device only.</p>'); }
+  function showMenu(){ openModal('<h2>Menu</h2><div class="menulist">'+
+      '<button id="mHow">❔ How to play</button>'+
+      '<button id="mStats">📊 Your stats</button>'+
+      '<button id="mNote">📓 Detective’s Notebook</button>'+
+      '<button id="mRnd">🎲 New random case</button>'+
+      (finished?'':'<button id="mGive" class="danger">🏳️ Give up &amp; reveal</button>')+'</div>');
+    document.getElementById('mHow').onclick=function(){ showHow(); };
+    document.getElementById('mStats').onclick=function(){ showStats(); };
+    document.getElementById('mNote').onclick=function(){ openNotebook(); };
+    document.getElementById('mRnd').onclick=function(){ closeModal(); newRandom(); };
+    if(document.getElementById('mGive')) document.getElementById('mGive').onclick=function(){
+      openModal('<h2>Give up?</h2><p>The solution will be revealed and your daily streak resets.</p>'+
+        '<button class="bigbtn" id="gy" style="background:#2a1418;color:#ffb3bd">Reveal solution</button>'+
+        '<button class="bigbtn" id="gn" style="background:var(--card2);color:#cfe2ff;margin-top:8px">Keep trying</button>');
+      document.getElementById('gy').onclick=function(){ endGame(false); };
+      document.getElementById('gn').onclick=closeModal; };
   }
 
-  /* ---------- Boot a puzzle ---------- */
+  /* ---------- boot a puzzle ---------- */
   function loadPuzzle(){
-    cats = currentTheme().categories;
-    puzzle = E.generate(currentTheme(), currentSeed());
-    if(!puzzle){ setStatus('Could not generate this case — try another.', 'warn'); return; }
-    // reset transient state, then restore any saved progress
-    G=E.emptyGrid(cats); elapsedMs=0; hintsUsed=0; finished=false; won=false;
+    theme=currentTheme(); cats=theme.categories;
+    puzzle=E.generate(theme, currentSeed());
+    if(!puzzle){ toast('Could not generate this case.'); return; }
+    G=E.emptyGrid(cats); elapsedMs=0; hintsUsed=0; finished=false; won=false; activeS=0;
     if(timerStart||timerTick) stopTimer(); timerStart=null;
-    loadProgress();
-    if(!G) G=E.emptyGrid(cats);
-
-    document.getElementById('ending').style.display='none';
-    document.getElementById('ending').innerHTML='';
-    document.getElementById('btnShare').disabled = !finished;
-    setStatus('');
-
-    renderMeta(); renderClues(); buildBoard(); renderBoard(); renderTracker();
-    if(finished){ if(won) { stopTimer(); } else { revealSolutionOnBoard(); renderBoard(); }
-      document.getElementById('ending').style.display='block';
-      document.getElementById('ending').innerHTML = won
-        ? '<h3>Case closed.</h3>'+officialReport()
-        : '<h3>The trail goes cold.</h3>'+officialReport();
-    }
+    loadProgress(); if(!G) G=E.emptyGrid(cats);
+    if(finished && !won) revealOnBoard();
+    renderMeta(); renderClues(); renderRail(); renderCard(); updateArrest();
+    if(finished) showResult();
   }
-  function newRandom(){
-    mode='random'; randomSeed=(Math.floor(Math.random()*0xffffffff))>>>0;
-    document.getElementById('btnGiveUp').style.display='';
-    loadPuzzle();
-  }
+  function newRandom(){ mode='random'; randomSeed=(Math.floor(Math.random()*0xffffffff))>>>0; loadPuzzle(); }
 
-  /* ---------- Wire up ---------- */
-  document.getElementById('btnArrest').onclick=makeArrest;
+  /* ---------- wire ---------- */
   document.getElementById('btnHint').onclick=giveHint;
-  document.getElementById('btnHow').onclick=showHow;
-  document.getElementById('btnStats').onclick=showStats;
-  document.getElementById('btnNew').onclick=newRandom;
-  document.getElementById('btnShare').onclick=shareResult;
-  document.getElementById('btnGiveUp').onclick=giveUp;
+  document.getElementById('btnArrest').onclick=makeArrest;
+  document.getElementById('btnNotebook').onclick=openNotebook;
+  document.getElementById('btnNotebookSide').onclick=openNotebook;
+  document.getElementById('btnMenu').onclick=showMenu;
   document.getElementById('modalClose').onclick=closeModal;
   document.getElementById('modal').onclick=function(e){ if(e.target.id==='modal') closeModal(); };
 
   loadPuzzle();
-  // First-time visitors get the how-to.
   try{ if(!localStorage.getItem('dd:seenHow')){ showHow(); localStorage.setItem('dd:seenHow','1'); } }catch(e){}
 })();
 </script>
