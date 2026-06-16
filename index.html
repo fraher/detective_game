@@ -189,6 +189,12 @@
                           : THEMES[Math.floor((randomSeed>>>0)/2654435761*THEMES.length)%THEMES.length];
   }
   function storeKey(){ return mode==='daily' ? 'dd:day:'+dayIndex : 'dd:rnd:'+(randomSeed>>>0); }
+  // Difficulty ramps across the week: gentle Mon, Notebook-grade by the weekend.
+  var WEEK_TARGET = ['Hard','Easy','Easy','Medium','Medium','Hard','Fiendish']; // Sun..Sat
+  function currentTarget(){
+    if(mode!=='daily') return null;
+    return WEEK_TARGET[((new Date().getUTCDay())%7+7)%7];
+  }
 
   /* ---------- persistence ---------- */
   function saveProgress(){ try{ localStorage.setItem(storeKey(), JSON.stringify({
@@ -219,8 +225,9 @@
 
   /* ---------- grid logic ---------- */
   function setYesExcl(a,b,i,j){ var N=cats[0].values.length; E.sl(G,a,b,i,j,1);
-    for(var n=0;n<N;n++){ if(n!==j && E.gl(G,a,b,i,n)===0) E.sl(G,a,b,i,n,-1); }
-    for(var m=0;m<N;m++){ if(m!==i && E.gl(G,a,b,m,j)===0) E.sl(G,a,b,m,j,-1); } }
+    // exactly-one per row/column: force every other cell to ✗, overriding any prior ✓
+    for(var n=0;n<N;n++){ if(n!==j && E.gl(G,a,b,i,n)!==-1) E.sl(G,a,b,i,n,-1); }
+    for(var m=0;m<N;m++){ if(m!==i && E.gl(G,a,b,m,j)!==-1) E.sl(G,a,b,m,j,-1); } }
   function derivedAssign(){ var N=cats[0].values.length,out=[null];
     for(var c=1;c<cats.length;c++){ out[c]=[]; for(var s=0;s<N;s++){ var v=-1; for(var j=0;j<N;j++) if(E.gl(G,0,c,s,j)===1){ v=j; break; } out[c][s]=v; } } return out; }
   function suspectProgress(s){ var n=0; for(var c=1;c<cats.length;c++){ for(var j=0;j<cats[0].values.length;j++) if(E.gl(G,0,c,s,j)===1){ n++; break; } } return n; }
@@ -434,7 +441,7 @@
   /* ---------- boot a puzzle ---------- */
   function loadPuzzle(){
     theme=currentTheme(); cats=theme.categories;
-    puzzle=E.generate(theme, currentSeed());
+    puzzle=E.generate(theme, currentSeed(), { target: currentTarget() });
     if(!puzzle){ toast('Could not generate this case.'); return; }
     G=E.emptyGrid(cats); elapsedMs=0; hintsUsed=0; finished=false; won=false; activeS=0;
     if(timerStart||timerTick) stopTimer(); timerStart=null;
@@ -442,6 +449,9 @@
     if(finished && !won) revealOnBoard();
     renderMeta(); renderClues(); renderRail(); renderCard(); updateArrest();
     if(finished) showResult();
+    // Hash-gated test hook (#test). Exposes only data already derivable client-side.
+    if(/test/.test(location.hash)) window.__dd={ sol:function(){return puzzle.solution;},
+      fin:function(){return finished;}, won:function(){return won;}, diff:function(){return puzzle.difficulty;} };
   }
   function newRandom(){ mode='random'; randomSeed=(Math.floor(Math.random()*0xffffffff))>>>0; loadPuzzle(); }
 

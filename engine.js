@@ -188,6 +188,51 @@
     return firstUnknown(G) === null;
   }
 
+  // Card-only solver: the reach of the simple suspect-card UI. It stores only
+  // the anchor grids (suspect×category) — the state a player holds from the
+  // cards — and projects clues onto suspects through known anchor links. It
+  // cannot reason about un-pinned non-anchor relationships (that needs the
+  // Notebook). Returns true iff fully solvable this way. Used to label
+  // difficulty honestly: card-solvable => Easy/Medium, else => Hard/Fiendish.
+  function cardSolvable(cats, clues) {
+    var K = cats.length, N = cats[0].values.length, A = {};
+    for (var c = 1; c < K; c++) { A[c] = []; for (var i = 0; i < N; i++) A[c].push(new Array(N).fill(0)); }
+    var st = { ch: true, bad: false };
+    function set(c, s, v, val) { var cur = A[c][s][v]; if (cur === 0) { A[c][s][v] = val; st.ch = true; } else if (cur !== val) st.bad = true; }
+    while (st.ch && !st.bad) {
+      st.ch = false;
+      for (var ci = 0; ci < clues.length; ci++) {
+        var cl = clues[ci];
+        if (cl.kind === 'pos' || cl.kind === 'neg') {
+          var want = cl.kind === 'pos' ? 1 : -1, e1 = cl.e1, e2 = cl.e2;
+          if (e1[0] === 0) set(e2[0], e1[1], e2[1], want);
+          else if (e2[0] === 0) set(e1[0], e2[1], e1[1], want);
+          else {
+            var cA = e1[0], vA = e1[1], cB = e2[0], vB = e2[1];
+            for (var s = 0; s < N; s++) {
+              var aA = A[cA][s][vA], aB = A[cB][s][vB];
+              if (want === 1) { if (aA === 1) set(cB, s, vB, 1); if (aB === 1) set(cA, s, vA, 1); }
+              else { if (aA === 1) set(cB, s, vB, -1); if (aB === 1) set(cA, s, vA, -1); }
+            }
+          }
+        } else if (cl.kind === 'either' && cl.a[0] === 0) {
+          var s2 = cl.a[1], o1 = cl.opts[0], o2 = cl.opts[1], cc = o1[0];
+          var l1 = A[cc][s2][o1[1]], l2 = A[cc][s2][o2[1]];
+          if (l1 === -1) set(cc, s2, o2[1], 1); if (l2 === -1) set(cc, s2, o1[1], 1);
+          if (l1 === 1) set(cc, s2, o2[1], -1); if (l2 === 1) set(cc, s2, o1[1], -1);
+        }
+      }
+      for (var c2 = 1; c2 < K; c2++) {
+        var M = A[c2];
+        for (var r = 0; r < N; r++) { var y = -1, u = []; for (var j = 0; j < N; j++) { if (M[r][j] === 1) { if (y >= 0) st.bad = true; y = j; } else if (M[r][j] === 0) u.push(j); } if (y >= 0) { for (var k = 0; k < u.length; k++) { M[r][u[k]] = -1; st.ch = true; } } else if (u.length === 1) { M[r][u[0]] = 1; st.ch = true; } else if (!u.length) st.bad = true; }
+        for (var col = 0; col < N; col++) { var yc = -1, uc = []; for (var ri = 0; ri < N; ri++) { if (M[ri][col] === 1) { if (yc >= 0) st.bad = true; yc = ri; } else if (M[ri][col] === 0) uc.push(ri); } if (yc >= 0) { for (var k2 = 0; k2 < uc.length; k2++) { M[uc[k2]][col] = -1; st.ch = true; } } else if (uc.length === 1) { M[uc[0]][col] = 1; st.ch = true; } else if (!uc.length) st.bad = true; }
+      }
+    }
+    if (st.bad) return false;
+    for (var c3 = 1; c3 < K; c3++) for (var i3 = 0; i3 < N; i3++) for (var j3 = 0; j3 < N; j3++) if (A[c3][i3][j3] === 0) return false;
+    return true;
+  }
+
   /* ----- Generator ----------------------------------------------------- */
   // Build a random solution: perm[c] maps suspect index -> value index.
   function randomSolution(cats, rng) {
@@ -238,70 +283,73 @@
     return { pool: pool, eithers: eithers.slice(0, N + 1) };
   }
 
-  // Produce a minimal clue set that yields a UNIQUE solution.
-  function carveMinimalSet(cats, perm, rng) {
+  // Produce a minimal clue set that is solvable by PURE LOGIC (propagation,
+  // no guessing). This guarantees both fairness (no branching needed) and a
+  // unique solution. Minimal = removing any clue breaks logical solvability.
+  function carveLogicalSet(cats, perm, rng) {
     var built = buildCluePool(cats, perm, rng);
     // Bias toward more interesting clues first: eithers + negatives, then positives.
     var ordered = built.eithers.concat(shuffle(built.pool.slice(), rng));
-    var empty = emptyGrid(cats);
 
-    var chosen = [], solvedUnique = false;
+    var chosen = [], ok = false;
     for (var i = 0; i < ordered.length; i++) {
       chosen.push(ordered[i]);
-      if (countSolutions(cats, chosen, empty, 2) === 1) { solvedUnique = true; break; }
+      if (propagationSolvable(cats, chosen)) { ok = true; break; }
     }
-    if (!solvedUnique) return null;
+    if (!ok) return null;
 
-    // Greedy prune to a minimal set (drop any clue we don't need).
     for (var p = chosen.length - 1; p >= 0; p--) {
       var trial = chosen.slice(0, p).concat(chosen.slice(p + 1));
-      if (countSolutions(cats, trial, empty, 2) === 1) chosen = trial;
+      if (propagationSolvable(cats, trial)) chosen = trial;
     }
     return chosen;
   }
 
-  // Public: generate a full puzzle object from a theme + numeric seed.
-  function generate(theme, seed) {
-    var rng = makeRng(seed >>> 0);
-    var cats = theme.categories;
-    for (var attempt = 0; attempt < 40; attempt++) {
-      var perm = randomSolution(cats, rng);
-      var clues = carveMinimalSet(cats, perm, rng);
-      if (!clues) continue;
-
-      var suspOf = makeSuspOf(cats, perm);
-      // solution[suspectIndex] = [valueIndex per category] (index 0 == suspect)
-      var solution = [];
-      for (var s = 0; s < cats[0].values.length; s++) {
-        var row = [s];
-        for (var c = 1; c < cats.length; c++) row.push(perm[c][s]);
-        solution.push(row);
-      }
-      var guiltCat = theme.guilt.cat, guiltVal = theme.guilt.value;
-      var culprit = suspOf(guiltCat, guiltVal);
-
-      shuffle(clues, rng); // present clues in random order
-      return {
-        themeId: theme.id,
-        cats: cats,
-        clues: clues,
-        clueText: clues.map(function (c) { return renderClue(c, cats); }),
-        solution: solution,
-        culprit: culprit,
-        guilt: theme.guilt,
-        difficulty: rateDifficulty(cats, clues)
-      };
+  function assemble(theme, cats, perm, clues, rng) {
+    var suspOf = makeSuspOf(cats, perm);
+    var solution = [];
+    for (var s = 0; s < cats[0].values.length; s++) {
+      var row = [s];
+      for (var c = 1; c < cats.length; c++) row.push(perm[c][s]);
+      solution.push(row);
     }
-    return null;
+    shuffle(clues, rng); // present clues in random order
+    return {
+      themeId: theme.id, cats: cats, clues: clues,
+      clueText: clues.map(function (c) { return renderClue(c, cats); }),
+      solution: solution, culprit: suspOf(theme.guilt.cat, theme.guilt.value),
+      guilt: theme.guilt, difficulty: rateDifficulty(cats, clues)
+    };
+  }
+
+  // Public: generate a puzzle from a theme + numeric seed.
+  // opts.target (optional): preferred difficulty band ('Easy'|'Medium'|'Hard'|'Fiendish').
+  // Generation is deterministic; if the target isn't hit within the attempt
+  // budget, the first valid puzzle is returned.
+  function generate(theme, seed, opts) {
+    opts = opts || {};
+    var rng = makeRng(seed >>> 0), cats = theme.categories, fallback = null;
+    for (var attempt = 0; attempt < 60; attempt++) {
+      var perm = randomSolution(cats, rng);
+      var clues = carveLogicalSet(cats, perm, rng);
+      if (!clues) continue;
+      var puzzle = assemble(theme, cats, perm, clues, rng);
+      if (!opts.target || puzzle.difficulty === opts.target) return puzzle;
+      if (!fallback) fallback = puzzle;
+    }
+    return fallback;
   }
 
   function rateDifficulty(cats, clues) {
-    // Two signals: needing branching (no pure-propagation path) and a leaner
-    // clue set both make a puzzle harder. Combine into a 4-band score.
-    var fair = propagationSolvable(cats, clues);
+    // Honest difficulty: a puzzle that needs the Notebook (not solvable from
+    // the cards alone) is Hard/Fiendish; one solvable from cards is Easy/Medium.
+    // Leaner clue sets within each tier are the harder end.
+    var notebook = !cardSolvable(cats, clues);
     var n = clues.length;
-    var score = (fair ? 0 : 2) + (n <= 7 ? 1 : 0);
-    return ['Easy', 'Medium', 'Hard', 'Fiendish'][Math.min(score, 3)];
+    // Within each tier, a leaner clue set is the harder end (less hand-holding).
+    // Thresholds calibrated to the generator's natural clue-count distribution.
+    if (!notebook) return n >= 11 ? 'Easy' : 'Medium';
+    return n >= 10 ? 'Hard' : 'Fiendish';
   }
 
   /* ----- Natural-language clue rendering ------------------------------- */
@@ -322,7 +370,7 @@
     makeRng: makeRng, hashStr: hashStr, shuffle: shuffle,
     emptyGrid: emptyGrid, cloneGrid: cloneGrid, gl: gl, sl: sl,
     propagate: propagate, countSolutions: countSolutions,
-    propagationSolvable: propagationSolvable,
+    propagationSolvable: propagationSolvable, cardSolvable: cardSolvable,
     generate: generate, renderClue: renderClue, rateDifficulty: rateDifficulty
   };
 

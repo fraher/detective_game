@@ -36,13 +36,15 @@ THEMES.forEach(function (theme) {
     // 1) unique solution
     var empty = E.emptyGrid(p.cats);
     assert(E.countSolutions(p.cats, p.clues, empty, 2) === 1, theme.id + ' seed ' + seed + ' unique solution');
+    // 1b) solvable by pure logic, no guessing (fairness guarantee)
+    assert(E.propagationSolvable(p.cats, p.clues), theme.id + ' seed ' + seed + ' solvable without guessing');
     // 2) clues consistent with solution
     assert(cluesConsistent(p), theme.id + ' seed ' + seed + ' clues consistent');
-    // 3) minimal: removing any clue breaks uniqueness
+    // 3) minimal: removing any clue breaks logical solvability
     var minimal = true;
     for (var k = 0; k < p.clues.length; k++) {
       var trial = p.clues.slice(0, k).concat(p.clues.slice(k + 1));
-      if (E.countSolutions(p.cats, trial, empty, 2) === 1) { minimal = false; break; }
+      if (E.propagationSolvable(p.cats, trial)) { minimal = false; break; }
     }
     assert(minimal, theme.id + ' seed ' + seed + ' clue set is minimal');
     // 4) culprit is the suspect tied to the guilt element
