@@ -2,451 +2,471 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Daily Detective – Fog on the Thames</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Daily Detective — a new deduction case every day</title>
+<meta name="description" content="Daily Detective: a free logic deduction puzzle. Crack a fresh, uniquely-solvable case every day. No two days are ever the same."/>
 <style>
-  :root{--bg:#0f1115;--fg:#e8ecf1;--muted:#9aa4b2;--yes:#2ecc71;--no:#e74c3c;--unknown:#3a3f4b;--card:#171a21;--accent:#53a7ff;--culprit:#ff4757;--innocent:#1e90ff}
-  body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
-  header{padding:18px 20px;border-bottom:1px solid #222;background:#0d0f13}
-  h1{margin:0;font-size:20px}
-  main{max-width:980px;margin:20px auto;padding:0 16px}
-  .brief{background:var(--card);border:1px solid #222;border-radius:10px;padding:14px 16px}
-  .row{display:grid;gap:16px;margin-top:16px}
-  @media(min-width:880px){.row{grid-template-columns:1fr 1fr}}
-  table{border-collapse:separate;border-spacing:0;margin:0;width:100%;background:#111318;border:1px solid #222;border-radius:10px;overflow:hidden}
-  caption{caption-side:top;text-align:left;padding:10px 12px;color:#9aa4b2}
-  th,td{border-bottom:1px solid #1d212a;border-right:1px solid #1d212a;padding:10px 8px;text-align:center}
-  th{background:#12151b;font-weight:600}
-  tr:last-child td, tr:last-child th{border-bottom:0}
-  td:last-child, th:last-child{border-right:0}
-  .chip{display:inline-block;padding:2px 8px;border-radius:999px;background:#0e1117;border:1px solid #242a35;color:var(--muted);margin-right:6px}
-  .legend{margin:6px 0 0 0;color:var(--muted);font-size:12px}
-  .cell{cursor:pointer;user-select:none;border-radius:6px}
-  .u{background:var(--unknown)}
-  .y{background:var(--yes);font-weight:700}
-  .n{background:var(--no);color:#fff;opacity:.7}
-  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
-  button{background:var(--accent);border:0;color:#001326;font-weight:700;padding:9px 12px;border-radius:8px;cursor:pointer}
-  button.secondary{background:#232a35;color:#cbd5e1;border:1px solid #2f3947}
-  button.ghost{background:transparent;color:#9fbfff;border:1px dashed #2f3947}
-  .warn{color:#ffd166;margin-left:10px}
-  .good{color:#2ecc71;margin-left:10px}
-  details{background:#0e1117;border:1px solid #222;border-radius:10px;padding:10px 14px}
-  summary{cursor:pointer;color:#bcd3ff}
-  .mini{font-size:13px;color:#9aa4b2}
-  .center{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .pill{padding:4px 8px;border-radius:999px;background:#0e1117;border:1px solid #2b3240;color:#cdd6e3}
-  .culprit{padding:4px 10px;border-radius:999px;background:var(--culprit);color:#fff;font-weight:700}
-  .innocent{padding:4px 10px;border-radius:999px;background:var(--innocent);color:#fff;font-weight:700}
-  .ending{margin-top:20px;padding:14px 16px;background:#171a21;border:1px solid #222;border-radius:10px;display:none}
-  .heat{transition:background-color .2s ease, color .2s ease}
-  .hidden{display:none}
-  .roleTag{margin-left:6px;font-size:12px;padding:2px 6px;border-radius:6px}
-  .tabs{display:flex;gap:8px;margin:12px 0}
-  .tab{padding:8px 10px;border-radius:8px;border:1px solid #2f3947;background:#232a35;color:#cbd5e1;cursor:pointer}
-  .tab.active{background:var(--accent);color:#001326;border-color:transparent}
-  .interrogate{display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start}
-  .suspectList{background:#111318;border:1px solid #222;border-radius:10px;padding:8px}
-  .suspectCard{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;cursor:pointer}
-  .suspectCard.active{outline:2px solid var(--accent);background:#0f1a24}
-  .badge{padding:2px 6px;border-radius:6px;font-size:12px}
-  .group{background:#111318;border:1px solid #222;border-radius:10px;padding:10px}
-  .group h4{margin:0 0 8px 0}
-  .choiceBar{display:flex;flex-wrap:wrap;gap:8px}
-  .choice{padding:8px 10px;border-radius:999px;border:1px solid #2b3240;background:#0e1117;color:#cdd6e3;cursor:pointer}
-  .choice.on{background:var(--yes);color:#0c0f12;border-color:transparent;font-weight:700}
-  .choice.off{background:#2a1113;color:#ffd9d9;border-color:#3b1a1d}
-  .hint{font-size:12px;color:#9aa4b2;margin-top:6px}
+  :root{
+    --bg:#0e1016;--card:#181c26;--card2:#1f2433;--line:#2a3040;--fg:#eef2f7;--muted:#98a2b3;
+    --accent:#6aa6ff;--gold:#ffce5c;--green:#37d39a;--red:#ff6b7a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:radial-gradient(1200px 500px at 50% -10%,#1b2030 0%,transparent 60%),var(--bg);
+       color:var(--fg);font:16px/1.45 -apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  button{font-family:inherit}
+  .wrap{max-width:980px;margin:0 auto;padding-bottom:96px}
+  /* top bar */
+  .top{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;
+       padding:12px 16px;background:rgba(14,16,22,.86);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .ttl{font-weight:800;font-size:16px;line-height:1.15}
+  .ttl small{display:block;color:var(--muted);font-weight:600;font-size:11px;letter-spacing:.4px;margin-top:1px}
+  .tstats{display:flex;gap:6px;align-items:center}
+  .stat{display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--line);
+        border-radius:999px;padding:5px 9px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+  .stat.diff{color:var(--gold)}
+  .menu{background:var(--card);border:1px solid var(--line);color:var(--fg);border-radius:10px;width:34px;height:32px;font-size:16px;cursor:pointer}
+  /* ad slots */
+  .adslot{margin:12px 16px;min-height:90px;border:1px dashed #2f3947;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#5b6678;font-size:12px;letter-spacing:.5px}
+  /* brief */
+  .brief{margin:12px 16px 0;color:var(--muted);font-size:13.5px}
+  .brief b{color:var(--fg)}
+  /* suspect rail */
+  .rail{display:flex;gap:10px;overflow-x:auto;padding:14px 16px 4px;scrollbar-width:none}
+  .rail::-webkit-scrollbar{display:none}
+  .face{flex:0 0 auto;width:62px;text-align:center;background:none;border:0;cursor:pointer;padding:0}
+  .ava{width:58px;height:58px;border-radius:18px;background:var(--card2);border:1px solid var(--line);
+       display:flex;align-items:center;justify-content:center;font-size:30px;position:relative;transition:.15s;margin:0 auto}
+  .face.active .ava{border-color:var(--accent);box-shadow:0 0 0 3px rgba(106,166,255,.25)}
+  .face .nm{font-size:11px;margin-top:5px;color:var(--muted);font-weight:600}
+  .face.active .nm{color:var(--fg)}
+  .dot{position:absolute;right:-4px;top:-4px;width:18px;height:18px;border-radius:50%;
+       font-size:11px;font-weight:900;display:none;align-items:center;justify-content:center;border:2px solid var(--bg)}
+  .dot.full{display:flex;background:var(--green);color:#04241a}
+  .dot.part{display:flex;background:var(--gold);color:#3a2a00}
+  /* layout */
+  .cols{display:grid;gap:14px;padding:0 16px;grid-template-columns:1fr}
+  @media(min-width:900px){.cols{grid-template-columns:1.25fr .9fr;align-items:start}}
+  /* suspect card */
+  .card{background:linear-gradient(180deg,var(--card),#15192322);border:1px solid var(--line);border-radius:20px;
+        padding:16px 16px 12px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .who{display:flex;align-items:center;gap:12px}
+  .who .big{width:52px;height:52px;border-radius:15px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:28px;border:1px solid var(--line)}
+  .who h2{margin:0;font-size:20px}
+  .who p{margin:1px 0 0;color:var(--muted);font-size:12.5px}
+  .seg{margin-top:14px}
+  .seg .lab{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;letter-spacing:.8px;color:var(--muted);text-transform:uppercase;margin:0 2px 8px}
+  .row{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{flex:1 1 calc(50% - 8px);min-height:48px;display:flex;align-items:center;justify-content:center;gap:6px;
+        background:var(--card2);border:1px solid var(--line);border-radius:13px;font-weight:700;font-size:14px;color:var(--fg);
+        padding:6px 8px;cursor:pointer;transition:.1s;user-select:none}
+  .chip .mk{font-size:13px;display:none}
+  .chip.on{background:linear-gradient(180deg,#1b3b6b,#16315a);border-color:var(--accent);color:#cfe2ff}
+  .chip.on .mk{display:inline;color:var(--green)}
+  .chip.off{opacity:.42;text-decoration:line-through;border-style:dashed}
+  .chip.off .mk{display:inline;color:var(--red)}
+  .chip.guilt.on{background:linear-gradient(180deg,#5a1f2a,#46101a);border-color:var(--red);color:#ffd7dc}
+  .chip.guilt.on .mk{display:inline;color:var(--gold)}
+  .hintline{margin:11px 2px 0;color:var(--muted);font-size:11.5px;text-align:center}
+  /* side panel */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .panel>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;padding:13px 15px;font-weight:700;font-size:14px;cursor:pointer}
+  .panel>summary::-webkit-details-marker{display:none}
+  .panel .cnt{color:var(--muted);font-weight:600;font-size:12px}
+  .panel ol{margin:0;padding:2px 16px 14px 32px}
+  .panel ol li{margin:7px 0;color:#d7deea;font-size:13.5px}
+  .nbtn{display:block;width:calc(100% - 32px);margin:0 16px 14px;background:#10131c;border:1px dashed var(--line);
+        color:#cfe2ff;border-radius:12px;padding:12px;font-weight:700;font-size:13.5px;cursor:pointer}
+  /* bottom action bar */
+  .bar{position:fixed;left:0;right:0;bottom:0;z-index:6;max-width:980px;margin:0 auto;display:flex;gap:8px;
+       padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:rgba(14,16,22,.94);
+       backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+  .bar button{border:0;border-radius:13px;font-weight:800;font-size:14px;padding:14px 12px;cursor:pointer}
+  .bar .ghost{flex:0 0 auto;background:var(--card2);color:#cdd6e3;border:1px solid var(--line)}
+  .bar .go{flex:1;background:linear-gradient(180deg,#ffd470,#ffb43d);color:#3a2400}
+  .bar .go:disabled{filter:grayscale(.6) brightness(.7);cursor:not-allowed}
+  /* notebook grids */
+  .grids{display:flex;flex-wrap:wrap;gap:12px}
+  .gridwrap{flex:1 1 240px}
+  .gridwrap .cap{font-size:11px;color:var(--muted);margin:0 0 4px 2px}
+  table{border-collapse:separate;border-spacing:0;width:100%;background:#111318;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  th,td{border-bottom:1px solid #1d212a;border-right:1px solid #1d212a;text-align:center;font-size:11px}
+  th{background:#12151b;color:#c3ccd9;padding:5px 3px;line-height:1.1}
+  td{padding:0}
+  tr:last-child td,tr:last-child th{border-bottom:0}td:last-child,th:last-child{border-right:0}
+  th.rh{text-align:right;padding-right:6px;white-space:nowrap}
+  .cell{height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700;font-size:15px;color:var(--muted)}
+  .cell.y{background:rgba(55,211,154,.18);color:var(--green)}
+  .cell.n{background:rgba(255,107,122,.14);color:var(--red)}
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(4,6,10,.7);display:none;align-items:flex-end;justify-content:center;z-index:20}
+  .modal.open{display:flex}
+  @media(min-width:680px){.modal{align-items:center}}
+  .sheet{background:#141822;border:1px solid #2a3140;border-radius:18px 18px 0 0;max-width:560px;width:100%;
+         padding:18px 20px calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+  @media(min-width:680px){.sheet{border-radius:18px}}
+  .sheet h2{margin:0 0 10px;font-size:19px}
+  .sheet .x{float:right;background:var(--card2);color:#cdd6e3;border:1px solid var(--line);border-radius:10px;padding:6px 11px;font-weight:700;cursor:pointer}
+  .sheet ul{padding-left:18px}.sheet li{margin:6px 0}
+  .menulist{display:grid;gap:8px;margin-top:6px}
+  .menulist button{text-align:left;background:var(--card2);color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:13px 14px;font-weight:700;font-size:14px;cursor:pointer}
+  .menulist button.danger{color:#ffb3bd;background:#2a1418;border-color:#4a2026}
+  .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;margin:12px 0}
+  .statgrid .n{font-size:26px;font-weight:800}.statgrid .l{font-size:11px;color:var(--muted)}
+  .result{text-align:center}
+  .result .em{font-size:46px}
+  .result h2{margin:6px 0 2px}
+  .result .sub{color:var(--muted);font-size:14px}
+  .report{text-align:left;background:#10131c;border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-top:12px}
+  .report li{font-size:13.5px}
+  .bigbtn{width:100%;border:0;border-radius:13px;font-weight:800;font-size:15px;padding:14px;margin-top:12px;cursor:pointer;background:linear-gradient(180deg,#ffd470,#ffb43d);color:#3a2400}
+  kbd{background:#0e1117;border:1px solid #2b3240;border-radius:5px;padding:1px 6px;font-size:12px}
+  .toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#10141d;border:1px solid var(--line);
+         color:var(--fg);padding:10px 16px;border-radius:999px;font-size:13px;z-index:30;opacity:0;transition:.25s;pointer-events:none}
+  .toast.show{opacity:1}
 </style>
 </head>
 <body>
-<header>
-  <h1>Daily Detective — Case D-0923: Fog on the Thames</h1>
-</header>
-<main>
-  <section class="brief">
-    <p><b>Case brief.</b> The hour is late, and London is hushed beneath a shroud of fog. From the bell of St. Paul’s to the cries at Billingsgate, the city’s heartbeat is muffled, its alleys dangerous. Somewhere along the river’s edge, a royal courier vanished — along with a sealed folio whispered to contain secrets capable of toppling ministries. Witnesses report four familiar silhouettes in the mist: <b>Harper</b>, <b>Lin</b>, <b>Doyle</b>, and <b>Sutton</b>, each trusted once, but trust is brittle in the gaslight. Between <b>Duke Street</b>, the <b>River Pier</b>, the <b>Museum</b>, and the <b>Tea Room</b>, one deception was played. A <b>Parcel Swap</b>, a deft <b>Key Lift</b>, a flawless <b>Disguise</b>, or the darkest sin of all — an <b>Inside Job</b>. The motives are tangled in whispers of <b>Debt</b>, <b>Jealousy</b>, <b>Greed</b>, and a desperate <b>Cover‑up</b>. The fog conceals, but also reveals to a careful eye.</p>
-    <p><b>Your task:</b> Complete the detective’s grid. Mark \u2713 where a pairing is true and \u2717 where it is false. Each suspect must be linked to exactly one Location, one Method, and one Motive. When the grid is complete, press <b>Submit Guess</b>. The suspect with the motive <b>Cover‑up</b> is the <b>Culprit</b>. You have 6 attempts to crack the case before the trail goes cold.</p>
-    <div class="legend">
-      <span class="chip">Tap cell: · → ✓ → ✗</span>
-      <span class="chip">Rows & columns must be unique</span>
-      <span id="culpritBadge" class="culprit" style="display:none"></span>
+<div class="wrap">
+  <div class="top">
+    <div class="ttl">🕵️ Daily Detective<small id="caseSub">loading…</small></div>
+    <div class="tstats">
+      <span class="stat diff" id="pillDiff">—</span>
+      <span class="stat" id="pillTimer">⏱ 00:00</span>
+      <span class="stat" id="pillStreak">🔥 0</span>
+      <button class="menu" id="btnMenu" title="Menu">⋯</button>
     </div>
-  </section>
-
-  <div class="toolbar center">
-    <div class="tabs">
-      <button class="tab active" id="tabInterrogation">Interrogation</button>
-      <button class="tab" id="tabBoard">Board</button>
-    </div>
-    <button id="reset" class="secondary">Reset</button>
-    <button id="applyClues" class="secondary">Re‑apply clues</button>
-    <button id="check">Check</button>
-    <button id="submit">Submit Guess</button>
-    <button id="share" class="ghost" disabled>Share</button>
-    <span id="status" class="mini"></span>
-    <span id="tries" class="pill">Try 0 of 6</span>
   </div>
 
-  <div class="row" id="interrogationRow">
-    <div class="interrogate" id="interrogate"></div>
-  </div>
-  <div class="row hidden" id="boardRow">
-    <div id="megaGrid" style="grid-column:1 / -1"></div>
-  </div>
+  <!-- AD SLOT (top). Drop AdSense/Ezoic markup here. -->
+  <div class="adslot" id="adTop">ad slot · responsive leaderboard</div>
 
-  <!-- Hidden legacy grids to support logic rendering & tests -->
-  <div class="row hidden">
-    <div id="gridSL"></div>
-    <div id="gridSM"></div>
-  </div>
-  <div class="row hidden">
-    <div id="gridSV"></div>
-    <div></div>
-  </div>
+  <p class="brief" id="briefText">…</p>
 
-  <div class="row">
+  <div class="rail" id="rail"></div>
+
+  <div class="cols">
+    <div class="card" id="card"></div>
     <div>
-      <details open>
-        <summary>Clues</summary>
-        <ol class="mini" style="margin-left:18px">
-          <li>The act at the <b>River Pier</b> wasn’t done by the person acting out of <b>Greed</b>.</li>
-          <li><b>Doyle</b> wasn’t at the <b>Museum</b> or the <b>Tea Room</b>.</li>
-          <li>The <b>Parcel Swap</b> was <i>not</i> at <b>Duke Street</b>.</li>
-          <li>Whoever was at the <b>Tea Room</b> acted from <b>Debt</b>.</li>
-          <li><b>Harper</b> had no reason to <b>cover up</b> anything.</li>
-          <li>The <b>Disguise</b> wasn’t used at the <b>Museum</b>.</li>
-          <li><b>Lin</b> was seen at the <b>River Pier</b>.</li>
-          <li><b>Harper</b> used a <b>Key Lift</b>.</li>
-          <li><b>Harper</b> acted out of <b>Jealousy</b>.</li>
-          <li><b>Sutton</b>’s method was an <b>Inside Job</b>.</li>
-          <li><b>Culprit rule:</b> the suspect with motive <b>Cover‑up</b> is the <b>Culprit</b>; all others are <b>Innocent</b>.</li>
-        </ol>
+      <details class="panel" id="cluesPanel">
+        <summary>📋 Clues <span class="cnt" id="clueCount"></span></summary>
+        <ol id="clues"></ol>
       </details>
+      <div style="height:12px"></div>
+      <button class="nbtn" id="btnNotebookSide">📓 Open the Detective’s Notebook (full grid)</button>
+      <!-- AD SLOT (in-content). -->
+      <div class="adslot" id="adSide" style="margin:14px 0 0">ad slot · 300×250</div>
     </div>
   </div>
+</div>
 
-  <div id="roles" style="margin-top:16px"></div>
+<div class="bar">
+  <button class="ghost" id="btnHint">💡 Hint</button>
+  <button class="ghost" id="btnNotebook">📓</button>
+  <button class="go" id="btnArrest" disabled>🔒 Make the Arrest</button>
+</div>
 
-  <div id="ending" class="ending"></div>
-</main>
+<div class="modal" id="modal"><div class="sheet"><button class="x" id="modalClose">Close</button><div id="modalBody"></div></div></div>
+<div class="toast" id="toast"></div>
 
+<script src="themes.js"></script>
+<script src="engine.js"></script>
 <script>
-/* ===== Game Data ===== */
-var CASE_ID = 'D-0923';
-var MAX_TRIES = 6;
-var suspects = ['Harper','Lin','Doyle','Sutton'];
-var locations = ['Duke Street','River Pier','Museum','Tea Room'];
-var methods   = ['Parcel Swap','Key Lift','Disguise','Inside Job'];
-var motives   = ['Debt','Jealousy','Greed','Cover-up'];
+(function(){
+  'use strict';
+  var E = window.DDEngine, THEMES = window.DD_THEMES;
 
-// Consistent with all clues
-var solution = {
-  'Harper': ['Museum','Key Lift','Jealousy'],
-  'Lin':    ['River Pier','Parcel Swap','Cover-up'],
-  'Doyle':  ['Duke Street','Disguise','Greed'],
-  'Sutton': ['Tea Room','Inside Job','Debt']
-};
+  /* ---------- daily selection ---------- */
+  var EPOCH = Date.UTC(2026,0,1);
+  function todayIndex(){ return Math.floor((Date.now() - EPOCH)/86400000); }
+  var mode='daily', dayIndex=todayIndex(), randomSeed=null;
+  var puzzle=null, G=null, cats=null, theme=null, activeS=0;
+  var elapsedMs=0, timerStart=null, timerTick=null, hintsUsed=0, finished=false, won=false;
 
-/* ===== State ===== */
-// 0 unknown, 1 yes, -1 no
-function gridState(rows, cols){ var m={}; for(var i=0;i<rows.length;i++){ var r=rows[i]; m[r]={}; for(var j=0;j<cols.length;j++){ m[r][cols[j]]=0; } } return m; }
-var SL = gridState(suspects, locations);
-var SM = gridState(suspects, methods);
-var SV = gridState(suspects, motives);
-
-var storeKey = 'ddet:'+CASE_ID+':tries';
-var storeGuessesKey = 'ddet:'+CASE_ID+':guesses';
-var tries = Number(localStorage.getItem(storeKey) || 0);
-var guesses = JSON.parse(localStorage.getItem(storeGuessesKey) || '[]');
-
-/* ===== Grid helpers ===== */
-function setCell(state, r, c, val, rows, cols){
-  state[r][c]=val;
-  if(val===1){
-    for(var k=0;k<cols.length;k++){ var cc=cols[k]; if(cc!==c) state[r][cc]=-1; }
-    for(var i=0;i<rows.length;i++){ var rr=rows[i]; if(rr!==r) state[rr][c]=-1; }
+  function currentSeed(){ return mode==='daily' ? E.hashStr('daily:'+dayIndex) : (randomSeed>>>0); }
+  function currentTheme(){
+    return mode==='daily' ? THEMES[((dayIndex%THEMES.length)+THEMES.length)%THEMES.length]
+                          : THEMES[Math.floor((randomSeed>>>0)/2654435761*THEMES.length)%THEMES.length];
   }
-}
-function mark(state, r, c, val, rows, cols){
-  var cur=state[r][c]; if(cur===val) return true; if(cur!==0 && cur!==val) return false; setCell(state,r,c,val,rows,cols); return true;
-}
-function cycleCell(state, r, c, rows, cols){
-  var cur=state[r][c]; var next = (cur===0?1:(cur===1?-1:0));
-  setCell(state,r,c,next,rows,cols); renderAll(); applyClues(); renderAll(); checkContradictions(); showDerivedCulprit();
-}
+  function storeKey(){ return mode==='daily' ? 'dd:day:'+dayIndex : 'dd:rnd:'+(randomSeed>>>0); }
+  // Difficulty ramps across the week: gentle Mon, Notebook-grade by the weekend.
+  var WEEK_TARGET = ['Hard','Easy','Easy','Medium','Medium','Hard','Fiendish']; // Sun..Sat
+  function currentTarget(){
+    if(mode!=='daily') return null;
+    return WEEK_TARGET[((new Date().getUTCDay())%7+7)%7];
+  }
 
-/* ===== Clue propagation ===== */
-function applyClues(){
-  // (2) Doyle \u2260 Museum / Tea Room
-  mark(SL,'Doyle','Museum',-1,suspects,locations);
-  mark(SL,'Doyle','Tea Room',-1,suspects,locations);
-  // (3) Parcel Swap \u2260 Duke Street
-  for(var i=0;i<suspects.length;i++){
-    var s=suspects[i];
-    if(SM[s]['Parcel Swap']===1) mark(SL,s,'Duke Street',-1,suspects,locations);
-    if(SL[s]['Duke Street']===1) mark(SM,s,'Parcel Swap',-1,suspects,methods);
-  }
-  // (6) Disguise \u2260 Museum
-  for(var j=0;j<suspects.length;j++){
-    var ss=suspects[j];
-    if(SM[ss]['Disguise']===1) mark(SL,ss,'Museum',-1,suspects,locations);
-    if(SL[ss]['Museum']===1) mark(SM,ss,'Disguise',-1,suspects,methods);
-  }
-  // (1) River Pier \u2260 Greed
-  for(var k=0;k<suspects.length;k++){
-    var s3=suspects[k];
-    if(SL[s3]['River Pier']===1) mark(SV,s3,'Greed',-1,suspects,motives);
-    if(SV[s3]['Greed']===1) mark(SL,s3,'River Pier',-1,suspects,locations);
-  }
-  // (4) Tea Room \u2194 Debt
-  for(var t=0;t<suspects.length;t++){
-    var s4=suspects[t];
-    if(SL[s4]['Tea Room']===1) mark(SV,s4,'Debt',1,suspects,motives);
-    if(SV[s4]['Debt']===1) mark(SL,s4,'Tea Room',1,suspects,locations);
-  }
-  // (5) Harper \u2260 Cover-up
-  mark(SV,'Harper','Cover-up',-1,suspects,motives);
-  // (7) Lin @ River Pier
-  mark(SL,'Lin','River Pier',1,suspects,locations);
-  // (8) Harper used Key Lift
-  mark(SM,'Harper','Key Lift',1,suspects,methods);
-  // (9) Harper motive Jealousy
-  mark(SV,'Harper','Jealousy',1,suspects,motives);
-  // (10) Sutton method Inside Job
-  mark(SM,'Sutton','Inside Job',1,suspects,methods);
-}
+  /* ---------- persistence ---------- */
+  function saveProgress(){ try{ localStorage.setItem(storeKey(), JSON.stringify({
+    G:G, elapsedMs:elapsedMs+nowDelta(), hintsUsed:hintsUsed, finished:finished, won:won })); }catch(e){} }
+  function loadProgress(){ try{ var r=localStorage.getItem(storeKey()); if(!r) return;
+    var d=JSON.parse(r); if(d.G) G=d.G; elapsedMs=d.elapsedMs||0; hintsUsed=d.hintsUsed||0; finished=!!d.finished; won=!!d.won; }catch(e){} }
 
-/* ===== Rendering (legacy mini-grids) ===== */
-function makeTable(title, rows, cols, state, mountId){
-  var host = document.getElementById(mountId); if(!host) return;
-  host.innerHTML='';
-  var t=document.createElement('table');
-  var cap=document.createElement('caption'); cap.textContent=title; t.appendChild(cap);
-  var thead=document.createElement('thead');
-  var hr=document.createElement('tr'); hr.appendChild(document.createElement('th'));
-  for(var i=0;i<cols.length;i++){ var th=document.createElement('th'); th.textContent=cols[i]; hr.appendChild(th); }
-  thead.appendChild(hr); t.appendChild(thead);
-  var tbody=document.createElement('tbody');
-  for(var r=0;r<rows.length;r++){
-    var tr=document.createElement('tr');
-    var th2=document.createElement('th'); th2.textContent=rows[r]; tr.appendChild(th2);
-    for(var c=0;c<cols.length;c++){
-      var td=document.createElement('td'); td.className='cell u'; td.dataset.r=rows[r]; td.dataset.c=cols[c];
-      (function(rr,cc){ td.onclick=function(){ cycleCell(state,rr,cc,rows,cols); }; })(rows[r],cols[c]);
-      tr.appendChild(td);
+  /* ---------- stats ---------- */
+  function getStats(){ try{ return JSON.parse(localStorage.getItem('dd:stats')||'{}'); }catch(e){ return {}; } }
+  function setStats(s){ try{ localStorage.setItem('dd:stats', JSON.stringify(s)); }catch(e){} }
+  function recordResult(success){
+    if(mode!=='daily') return;
+    var s=getStats(); if(s.lastResultDay===dayIndex) return;
+    s.played=(s.played||0)+1;
+    if(success){ s.wins=(s.wins||0)+1; s.curStreak=(s.lastWinDay===dayIndex-1)?(s.curStreak||0)+1:1; s.lastWinDay=dayIndex; s.maxStreak=Math.max(s.maxStreak||0,s.curStreak); }
+    else { s.curStreak=0; }
+    s.lastResultDay=dayIndex; setStats(s);
+  }
+  function liveStreak(){ var s=getStats(); return (s.lastWinDay===dayIndex||s.lastWinDay===dayIndex-1)?(s.curStreak||0):0; }
+
+  /* ---------- timer ---------- */
+  function nowDelta(){ return timerStart?(Date.now()-timerStart):0; }
+  function fmt(ms){ var s=Math.floor(ms/1000); return ('0'+Math.floor(s/60)).slice(-2)+':'+('0'+(s%60)).slice(-2); }
+  function startTimer(){ if(finished||timerStart) return; timerStart=Date.now();
+    timerTick=setInterval(function(){ document.getElementById('pillTimer').textContent='⏱ '+fmt(elapsedMs+nowDelta()); },500); }
+  function stopTimer(){ if(timerStart){ elapsedMs+=nowDelta(); timerStart=null; } if(timerTick){ clearInterval(timerTick); timerTick=null; }
+    document.getElementById('pillTimer').textContent='⏱ '+fmt(elapsedMs); }
+
+  /* ---------- grid logic ---------- */
+  function setYesExcl(a,b,i,j){ var N=cats[0].values.length; E.sl(G,a,b,i,j,1);
+    // exactly-one per row/column: force every other cell to ✗, overriding any prior ✓
+    for(var n=0;n<N;n++){ if(n!==j && E.gl(G,a,b,i,n)!==-1) E.sl(G,a,b,i,n,-1); }
+    for(var m=0;m<N;m++){ if(m!==i && E.gl(G,a,b,m,j)!==-1) E.sl(G,a,b,m,j,-1); } }
+  function derivedAssign(){ var N=cats[0].values.length,out=[null];
+    for(var c=1;c<cats.length;c++){ out[c]=[]; for(var s=0;s<N;s++){ var v=-1; for(var j=0;j<N;j++) if(E.gl(G,0,c,s,j)===1){ v=j; break; } out[c][s]=v; } } return out; }
+  function suspectProgress(s){ var n=0; for(var c=1;c<cats.length;c++){ for(var j=0;j<cats[0].values.length;j++) if(E.gl(G,0,c,s,j)===1){ n++; break; } } return n; }
+  function anchorComplete(){ var N=cats[0].values.length,a=derivedAssign();
+    for(var c=1;c<cats.length;c++){ var seen={}; for(var s=0;s<N;s++){ var v=a[c][s]; if(v<0||seen[v]) return false; seen[v]=1; } } return true; }
+  function isCorrect(){ var a=derivedAssign();
+    for(var s=0;s<cats[0].values.length;s++) for(var c=1;c<cats.length;c++) if(a[c][s]!==puzzle.solution[s][c]) return false; return true; }
+
+  /* ---------- chip interaction ---------- */
+  function chipTap(c,v){ if(finished) return; startTimer();
+    var cur=E.gl(G,0,c,activeS,v);
+    if(cur===1) E.sl(G,0,c,activeS,v,0); else setYesExcl(0,c,activeS,v);
+    afterChange(); }
+  function chipRuleOut(c,v){ if(finished) return; startTimer();
+    var cur=E.gl(G,0,c,activeS,v);
+    E.sl(G,0,c,activeS,v, cur===-1?0:-1);
+    afterChange(); }
+  function afterChange(){ saveProgress(); renderCard(); renderRail(); renderNotebook(); updateArrest(); }
+
+  /* ---------- rendering ---------- */
+  function renderMeta(){
+    theme=currentTheme(); cats=theme.categories;
+    document.getElementById('caseSub').textContent =
+      (mode==='daily'?('Case #'+(dayIndex+1)):'Practice')+' · '+theme.title.toUpperCase();
+    document.getElementById('pillDiff').textContent=puzzle.difficulty;
+    document.getElementById('pillTimer').textContent='⏱ '+fmt(elapsedMs);
+    document.getElementById('pillStreak').textContent='🔥 '+liveStreak();
+    document.getElementById('briefText').innerHTML=theme.intro;
+  }
+  function renderRail(){
+    var rail=document.getElementById('rail'); rail.innerHTML='';
+    for(var s=0;s<cats[0].values.length;s++){
+      (function(s){
+        var b=document.createElement('button'); b.className='face'+(s===activeS?' active':'');
+        var prog=suspectProgress(s), dotCls=prog===cats.length-1?'dot full':(prog>0?'dot part':'dot');
+        b.innerHTML='<div class="ava">'+(theme.avatars?theme.avatars[s]:'👤')+
+          '<span class="'+dotCls+'">'+(prog===cats.length-1?'✓':'')+'</span></div><div class="nm">'+cats[0].values[s]+'</div>';
+        b.onclick=function(){ activeS=s; renderCard(); renderRail(); };
+        rail.appendChild(b);
+      })(s);
     }
-    tbody.appendChild(tr);
   }
-  t.appendChild(tbody); host.appendChild(t);
-}
-function renderGrid(state, mountId){
-  var host=document.getElementById(mountId); if(!host) return;
-  var tds=host.querySelectorAll('td.cell');
-  for(var i=0;i<tds.length;i++){
-    var td=tds[i]; var r=td.dataset.r, c=td.dataset.c; var v=state[r][c];
-    td.textContent = (v===1?'\u2713':v===-1?'\u2717':'\u00B7');
-    td.className = 'cell ' + (v===1?'y':v===-1?'n':'u');
+  function renderCard(){
+    var card=document.getElementById('card'); card.innerHTML='';
+    var icons=['','📍','🛠️','🎭'], labels=['','Where','How','Why'];
+    var who=document.createElement('div'); who.className='who';
+    who.innerHTML='<div class="big">'+(theme.avatars?theme.avatars[activeS]:'👤')+'</div>'+
+      '<div><h2>'+cats[0].values[activeS]+'</h2><p>'+((theme.roles&&theme.roles[activeS])||'a suspect')+'</p></div>';
+    card.appendChild(who);
+    for(var c=1;c<cats.length;c++){
+      (function(c){
+        var seg=document.createElement('div'); seg.className='seg';
+        seg.innerHTML='<div class="lab"><span>'+(icons[c]||'•')+'</span> '+(labels[c]||cats[c].label)+'</div>';
+        var row=document.createElement('div'); row.className='row';
+        for(var v=0;v<cats[c].values.length;v++){
+          (function(v){
+            var val=E.gl(G,0,c,activeS,v);
+            var isGuilt=(c===theme.guilt.cat && v===theme.guilt.value);
+            var chip=document.createElement('div');
+            chip.className='chip'+(isGuilt?' guilt':'')+(val===1?' on':(val===-1?' off':''));
+            chip.innerHTML='<span class="mk">'+(val===1?(isGuilt?'★':'✓'):(val===-1?'✗':''))+'</span>'+cats[c].values[v];
+            chip.onclick=function(){ chipTap(c,v); };
+            chip.oncontextmenu=function(e){ e.preventDefault(); chipRuleOut(c,v); };
+            var tmr=null;
+            chip.addEventListener('touchstart',function(){ tmr=setTimeout(function(){ tmr=null; chipRuleOut(c,v); }, 420); },{passive:true});
+            chip.addEventListener('touchend',function(e){ if(tmr){ clearTimeout(tmr); } else { e.preventDefault(); } });
+            chip.addEventListener('touchmove',function(){ if(tmr){ clearTimeout(tmr); tmr=null; } });
+            row.appendChild(chip);
+          })(v);
+        }
+        seg.appendChild(row); card.appendChild(seg);
+      })(c);
+    }
+    var hint=document.createElement('p'); hint.className='hintline';
+    hint.textContent='Tap to choose ✓ · long-press to rule out ✗ · the rest update automatically';
+    card.appendChild(hint);
   }
-}
-
-/* ===== Mega Heatmap Board ===== */
-function makeMegaTable(mountId){
-  var host=document.getElementById(mountId); if(!host) return; host.innerHTML='';
-  var t=document.createElement('table');
-  var thead=document.createElement('thead');
-  var r1=document.createElement('tr');
-  var blank=document.createElement('th'); blank.textContent=''; r1.appendChild(blank);
-  var hLoc=document.createElement('th'); hLoc.textContent='Location'; hLoc.colSpan=locations.length; r1.appendChild(hLoc);
-  var hMet=document.createElement('th'); hMet.textContent='Method';   hMet.colSpan=methods.length;   r1.appendChild(hMet);
-  var hMot=document.createElement('th'); hMot.textContent='Motive';   hMot.colSpan=motives.length;   r1.appendChild(hMot);
-  thead.appendChild(r1);
-  var r2=document.createElement('tr'); r2.appendChild(document.createElement('th'));
-  for(var i=0;i<locations.length;i++){ var th=document.createElement('th'); th.textContent=locations[i]; r2.appendChild(th); }
-  for(var j=0;j<methods.length;j++){ var thm=document.createElement('th'); thm.textContent=methods[j]; r2.appendChild(thm); }
-  for(var k=0;k<motives.length;k++){ var thv=document.createElement('th'); thv.textContent=motives[k]; r2.appendChild(thv); }
-  thead.appendChild(r2); t.appendChild(thead);
-  var tbody=document.createElement('tbody');
-  for(var s=0;s<suspects.length;s++){
-    var tr=document.createElement('tr');
-    var ths=document.createElement('th'); ths.textContent=suspects[s]; ths.dataset.roleTh=suspects[s]; tr.appendChild(ths);
-    for(var a=0;a<locations.length;a++){ tr.appendChild(makeMegaCell('L', suspects[s], locations[a])); }
-    for(var b=0;b<methods.length;b++){ tr.appendChild(makeMegaCell('M', suspects[s], methods[b])); }
-    for(var c=0;c<motives.length;c++){ tr.appendChild(makeMegaCell('V', suspects[s], motives[c])); }
-    tbody.appendChild(tr);
+  function renderClues(){
+    document.getElementById('clueCount').textContent='('+puzzle.clueText.length+')';
+    var ol=document.getElementById('clues'); ol.innerHTML='';
+    puzzle.clueText.forEach(function(t){ var li=document.createElement('li'); li.textContent=t; ol.appendChild(li); });
+    document.getElementById('cluesPanel').open = window.innerWidth>=900;
   }
-  t.appendChild(tbody); host.appendChild(t);
-}
-function makeMegaCell(kind, s, val){
-  var td=document.createElement('td'); td.className='cell heat'; td.dataset.kind=kind; td.dataset.s=s; td.dataset.val=val;
-  td.onclick=function(){
-    if(kind==='L') cycleCell(SL,s,val,suspects,locations);
-    else if(kind==='M') cycleCell(SM,s,val,suspects,methods);
-    else cycleCell(SV,s,val,suspects,motives);
-    renderAll();
-  };
-  return td;
-}
-function violatesUniqueness(state, r, c, cols){
-  var rowOnes=0; for(var k in state[r]) if(state[r][k]===1) rowOnes++;
-  var colOnes=0; for(var i=0;i<suspects.length;i++){ var s=suspects[i]; if(state[s][c]===1) colOnes++; }
-  return (rowOnes>0 && state[r][c]!==1) || (colOnes>0 && state[r][c]!==1);
-}
-function currentGuess(){
-  function pick(state){ var out={}; for(var i=0;i<suspects.length;i++){ var s=suspects[i]; var choice=null; for(var k in state[s]){ if(state[s][k]===1){ choice=k; break; } } out[s]=choice; } return out; }
-  var locs=pick(SL), mets=pick(SM), mots=pick(SV), g={};
-  for(var i=0;i<suspects.length;i++){ var s=suspects[i]; g[s]=[locs[s],mets[s],mots[s]]; }
-  return g;
-}
-function renderMega(){
-  var cells=document.querySelectorAll('#megaGrid td.cell');
-  for(var i=0;i<cells.length;i++){
-    var td=cells[i]; var kind=td.dataset.kind; var s=td.dataset.s; var v=td.dataset.val;
-    var state=(kind==='L')?SL:(kind==='M')?SM:SV;
-    var cols=(kind==='L')?locations:(kind==='M')?methods:motives;
-    var val=state[s][v];
-    td.textContent=(val===1?'\u2713':val===-1?'\u2717':'\u00B7');
-    var score=0.5; var feasible=(val!==-1);
-    if(!feasible) score=0.1; else score=0.55;
-    if(feasible){ if(violatesUniqueness(state,s,v,cols) && val!==1) score-=0.3; }
-    if(val===1){ var bad=violatesUniqueness(state,s,v,cols); score = bad?0.2:0.9; }
-    if(score<0) score=0; if(score>1) score=1;
-    var hue=220-Math.round(210*score); var sat=70; var light=38+Math.round(12*score);
-    td.style.backgroundColor='hsl('+hue+','+sat+'%,'+light+'%)';
-    td.style.color = (score>0.75?'#0c0f12':'#e8ecf1');
+  function updateArrest(){ document.getElementById('btnArrest').disabled = finished || !anchorComplete(); }
+
+  /* ---------- notebook (full grid) ---------- */
+  function pairList(){ var ps=[]; for(var a=0;a<cats.length;a++) for(var b=a+1;b<cats.length;b++) ps.push([a,b]);
+    ps.sort(function(x,y){ return (x[0]===0?0:1)-(y[0]===0?0:1); }); return ps; }
+  function notebookHTML(){
+    var html='<div class="grids">';
+    pairList().forEach(function(p){
+      var a=p[0],b=p[1],A=cats[a],B=cats[b],N=A.values.length;
+      html+='<div class="gridwrap"><div class="cap">'+A.label+' × '+B.label+'</div><table><thead><tr><th></th>';
+      for(var j=0;j<N;j++) html+='<th>'+B.values[j]+'</th>';
+      html+='</tr></thead><tbody>';
+      for(var i=0;i<N;i++){ html+='<tr><th class="rh">'+A.values[i]+'</th>';
+        for(var jj=0;jj<N;jj++){ var v=E.gl(G,a,b,i,jj);
+          html+='<td><div class="cell '+(v===1?'y':v===-1?'n':'')+'" data-a="'+a+'" data-b="'+b+'" data-i="'+i+'" data-j="'+jj+'">'+(v===1?'✓':v===-1?'✗':'·')+'</div></td>'; }
+        html+='</tr>'; }
+      html+='</tbody></table></div>';
+    });
+    return html+'</div>';
   }
-  // Update inline role tags on row headers
-  var g=currentGuess();
-  for(var i2=0;i2<suspects.length;i2++){
-    var name=suspects[i2];
-    var th=document.querySelector('th[data-role-th="'+name+'"]'); if(!th) continue;
-    var motive=g[name][2];
-    var label='';
-    if(motive==='Cover-up') label=' <span class="roleTag" style="background:'+getComputedStyle(document.documentElement).getPropertyValue('--culprit').trim()+';color:#fff">CULPRIT</span>';
-    else if(motive) label=' <span class="roleTag" style="background:'+getComputedStyle(document.documentElement).getPropertyValue('--innocent').trim()+';color:#fff">Innocent</span>';
-    else label=' <span class="roleTag" style="background:#444;color:#ccc">Unknown</span>';
-    th.innerHTML = name + label;
+  function openNotebook(){
+    openModal('<h2>Detective’s Notebook</h2><p style="color:var(--muted);font-size:13px;margin:0 0 10px">'+
+      'The full deduction grid. Tap any cell to cycle · → ✓ → ✗. Cross-reference to crack the hard cases.</p>'+notebookHTML());
+    wireNotebookCells();
   }
-}
-
-/* ===== Interrogation Mode ===== */
-var activeSuspect = suspects[0];
-function buildInterrogation(){
-  var host=document.getElementById('interrogate'); if(!host) return; host.innerHTML='';
-  var list=document.createElement('div'); list.className='suspectList';
-  for(var i=0;i<suspects.length;i++){
-    var s=suspects[i];
-    var card=document.createElement('div'); card.className='suspectCard'+(s===activeSuspect?' active':''); card.dataset.suspect=s;
-    var left=document.createElement('div'); left.textContent=s; card.appendChild(left);
-    var badge=document.createElement('span'); badge.className='badge'; badge.textContent=''; card.appendChild(badge);
-    (function(ss){ card.onclick=function(){ activeSuspect=ss; renderAll(); }; })(s);
-    list.appendChild(card);
+  function wireNotebookCells(){
+    var cells=document.querySelectorAll('#modalBody .cell');
+    for(var k=0;k<cells.length;k++){ (function(el){ el.onclick=function(){ if(finished) return; startTimer();
+      var a=+el.dataset.a,b=+el.dataset.b,i=+el.dataset.i,j=+el.dataset.j,cur=E.gl(G,a,b,i,j),nx=cur===0?1:(cur===1?-1:0);
+      if(nx===1) setYesExcl(a,b,i,j); else E.sl(G,a,b,i,j,nx);
+      saveProgress(); renderCard(); renderRail(); updateArrest();
+      el.outerHTML=el.outerHTML; // refresh handled below
+      renderNotebookInline(); }; })(cells[k]); }
   }
-  host.appendChild(list);
-  var panel=document.createElement('div'); panel.id='panel'; host.appendChild(panel);
-}
-function renderInterrogation(){
-  var panel=document.getElementById('panel'); if(!panel) return; panel.innerHTML='';
-  // update active highlighting
-  var cards=document.querySelectorAll('.suspectCard');
-  for(var i=0;i<cards.length;i++){ var c=cards[i]; if(c.dataset.suspect===activeSuspect) c.classList.add('active'); else c.classList.remove('active'); }
-
-  var title=document.createElement('h3'); title.textContent='Interrogate: '+activeSuspect; panel.appendChild(title);
-  // groups
-  panel.appendChild(renderGroup('Location', 'L', locations, SL));
-  panel.appendChild(renderGroup('Method',   'M', methods,   SM));
-  panel.appendChild(renderGroup('Motive',   'V', motives,   SV));
-  var hint=document.createElement('div'); hint.className='hint'; hint.textContent='Click a choice to set \u2713 (others in that row flip to \u2717). Clues and uniqueness propagate automatically.'; panel.appendChild(hint);
-}
-function renderGroup(label, kind, values, state){
-  var wrap=document.createElement('div'); wrap.className='group';
-  var h=document.createElement('h4'); h.textContent=label; wrap.appendChild(h);
-  var bar=document.createElement('div'); bar.className='choiceBar';
-  var s=activeSuspect;
-  for(var i=0;i<values.length;i++){
-    (function(val){
-      var btn=document.createElement('button'); btn.className='choice'; btn.textContent=val;
-      var cur=state[s][val];
-      if(cur===1) btn.classList.add('on'); else if(cur===-1) btn.classList.add('off');
-      btn.onclick=function(){ selectChoice(kind,s,val); };
-      bar.appendChild(btn);
-    })(values[i]);
+  function renderNotebookInline(){ // re-render cells in open modal without losing scroll
+    var body=document.getElementById('modalBody'); if(!body.querySelector('.grids')) return;
+    var cells=body.querySelectorAll('.cell');
+    cells.forEach(function(el){ var v=E.gl(G,+el.dataset.a,+el.dataset.b,+el.dataset.i,+el.dataset.j);
+      el.textContent=v===1?'✓':v===-1?'✗':'·'; el.className='cell '+(v===1?'y':v===-1?'n':''); });
   }
-  wrap.appendChild(bar);
-  return wrap;
-}
-function selectChoice(kind,s,val){
-  if(kind==='L') setCell(SL,s,val, 1, suspects, locations);
-  else if(kind==='M') setCell(SM,s,val, 1, suspects, methods);
-  else setCell(SV,s,val, 1, suspects, motives);
-  applyClues(); renderAll(); checkContradictions(); showDerivedCulprit();
-}
+  function renderNotebook(){ renderNotebookInline(); }
 
-/* ===== Validations ===== */
-function checkContradictions(){
-  var status=document.getElementById('status');
-  function dup(state, cols){
-    for(var i=0;i<suspects.length;i++){ var s=suspects[i]; var ones=0; for(var k in state[s]) if(state[s][k]===1) ones++; if(ones>1) return true; }
-    for(var j=0;j<cols.length;j++){ var c=cols[j]; var cnt=0; for(var i2=0;i2<suspects.length;i2++){ var s2=suspects[i2]; if(state[s2][c]===1) cnt++; } if(cnt>1) return true; }
-    return false;
+  /* ---------- actions ---------- */
+  function giveHint(){ if(finished) return; startTimer();
+    var N=cats[0].values.length,opts=[];
+    for(var s=0;s<N;s++) for(var c=1;c<cats.length;c++){ var v=puzzle.solution[s][c]; if(E.gl(G,0,c,s,v)!==1) opts.push([c,s,v]); }
+    if(!opts.length){ toast('Nothing left to reveal — make the arrest!'); return; }
+    var p=opts[Math.floor(Math.random()*opts.length)]; setYesExcl(0,p[0],p[1],p[2]); hintsUsed++;
+    activeS=p[1]; afterChange(); renderRail(); toast('Hint revealed ('+hintsUsed+' used)'); }
+  function makeArrest(){ if(finished||!anchorComplete()) return;
+    if(isCorrect()) endGame(true); else toast('The evidence doesn’t hold together — re-check the clues.'); }
+  function endGame(success){
+    finished=true; won=success; stopTimer(); recordResult(success); saveProgress();
+    document.getElementById('pillStreak').textContent='🔥 '+liveStreak();
+    if(!success) revealOnBoard();
+    renderCard(); renderRail(); updateArrest();
+    showResult();
   }
-  if(dup(SL,locations)||dup(SM,methods)||dup(SV,motives)){ status.textContent='Conflict: a row/column has multiple \u2713.'; status.className='mini warn'; }
-}
-function readyToSubmit(){
-  function uniqRow(state){ for(var i=0;i<suspects.length;i++){ var s=suspects[i]; var ones=0; for(var k in state[s]) if(state[s][k]===1) ones++; if(ones!==1) return false; } return true; }
-  function uniqCol(state, cols){ for(var j=0;j<cols.length;j++){ var c=cols[j]; var cnt=0; for(var i=0;i<suspects.length;i++){ var s=suspects[i]; if(state[s][c]===1) cnt++; } if(cnt!==1) return false; } return true; }
-  return uniqRow(SL)&&uniqRow(SM)&&uniqRow(SV)&&uniqCol(SL,locations)&&uniqCol(SM,methods)&&uniqCol(SV,motives);
-}
-function derivedCulprit(g){ for(var i=0;i<suspects.length;i++){ var s=suspects[i]; if(g[s][2]==='Cover-up') return s; } return null; }
-function scoreGuess(g){ var m=0; for(var i=0;i<suspects.length;i++){ var s=suspects[i]; var sol=solution[s]; var L=sol[0], M=sol[1], V=sol[2]; var l=g[s][0], meth=g[s][1], mot=g[s][2]; if(l===L)m++; if(meth===M)m++; if(mot===V)m++; } return {correct:m===12, matches:m, culprit:derivedCulprit(g)}; }
+  function revealOnBoard(){ var N=cats[0].values.length; G=E.emptyGrid(cats);
+    for(var s=0;s<N;s++) for(var c1=0;c1<cats.length;c1++) for(var c2=c1+1;c2<cats.length;c2++)
+      E.sl(G,c1,c2,puzzle.solution[s][c1],puzzle.solution[s][c2],1); }
+  function reportHTML(){ var out='<ul style="margin:6px 0 0;padding-left:18px">';
+    for(var s=0;s<cats[0].values.length;s++){ var parts=[];
+      for(var c=1;c<cats.length;c++) parts.push(cats[c].values[puzzle.solution[s][c]]);
+      out+='<li><b>'+cats[0].values[s]+'</b> — '+parts.join(' · ')+'</li>'; }
+    return out+'</ul>'; }
+  function showResult(){
+    var culprit=cats[0].values[puzzle.culprit];
+    var head = won
+      ? '<div class="em">🎉</div><h2>Case closed.</h2><div class="sub">You unmasked <b>'+culprit+'</b> in '+fmt(elapsedMs)+(hintsUsed?(' · '+hintsUsed+' hint'+(hintsUsed>1?'s':'')):' · no hints')+'</div>'
+      : '<div class="em">🌫️</div><h2>The trail goes cold.</h2><div class="sub">The real culprit was <b>'+culprit+'</b>.</div>';
+    openModal('<div class="result">'+head+'<div class="report"><b>The official report</b>'+reportHTML()+'</div>'+
+      '<button class="bigbtn" id="shareBtn">📋 Share result</button>'+
+      (mode==='daily'?'<button class="bigbtn" id="againBtn" style="background:var(--card2);color:#cfe2ff;margin-top:8px">🎲 Play a random case</button>'
+                     :'<button class="bigbtn" id="againBtn" style="background:var(--card2);color:#cfe2ff;margin-top:8px">🎲 Another random case</button>')+'</div>');
+    document.getElementById('shareBtn').onclick=shareResult;
+    document.getElementById('againBtn').onclick=function(){ closeModal(); newRandom(); };
+  }
+  function shareResult(){
+    var label=mode==='daily'?('Daily Detective #'+(dayIndex+1)):'Daily Detective (practice)';
+    var line=won?('Solved ✓ in '+fmt(elapsedMs)+(hintsUsed?(' · 🔍 '+hintsUsed+' hint'+(hintsUsed>1?'s':'')):' · 🟢 no hints')):'Unsolved ✗';
+    var streak=mode==='daily'?('\n🔥 streak '+liveStreak()):'';
+    var msg='🕵️ '+label+' — '+theme.title+'\n'+line+'\nDifficulty: '+puzzle.difficulty+streak+'\n'+location.origin+location.pathname+'\n#DailyDetective';
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(function(){ toast('Result copied to clipboard!'); },function(){ prompt('Copy:',msg); });
+    else prompt('Copy:',msg);
+  }
 
-/* ===== Roles, Sharing & Ending ===== */
-function showDerivedCulprit(){ var badge=document.getElementById('culpritBadge'); var coverUps=suspects.filter(function(s){ return SV[s]['Cover-up']===1; }); if(coverUps.length===1){ badge.textContent='Culprit (derived): '+coverUps[0]; badge.style.display='inline-block'; } else { badge.style.display='none'; } }
-function showRoles(){ var g=currentGuess(); var box=document.getElementById('roles'); box.innerHTML='<h4>Current Roles</h4>'; for(var i=0;i<suspects.length;i++){ var s=suspects[i]; var motive=g[s][2]; if(motive==='Cover-up') box.innerHTML+='<div><b>'+s+'</b> <span class="roleTag culprit">CULPRIT</span></div>'; else if(motive) box.innerHTML+='<div><b>'+s+'</b> <span class="roleTag innocent">Innocent</span></div>'; else box.innerHTML+='<div><b>'+s+'</b> <span class="roleTag" style="background:#444;color:#ccc">Unknown</span></div>'; } }
-function emojiRowForSuspect(s,g){ var sol=solution[s]; function b(v){ return v?'\uD83D\uDFE9':'\u2B1B'; } var name=(s.length<6?(s+'      ').slice(0,6):s.slice(0,6)); return name+' '+b(g[s][0]===sol[0])+b(g[s][1]===sol[1])+b(g[s][2]===sol[2]); }
-function shareText(solved, triesUsed, g){ var header= solved?('Daily Detective '+CASE_ID+' \u2014 '+triesUsed+'/6'):('Daily Detective '+CASE_ID+' \u2014 X/6'); var rows=suspects.map(function(s){return emojiRowForSuspect(s,g);}).join('\n'); var cul=derivedCulprit(g); return header+'\n'+rows+'\nCulprit: '+(cul?cul:'\u2014')+'\n#DailyDetective'; }
-function revealSolution(){ var out='<h4>Official Report</h4><ul>'; for(var s in solution){ var L=solution[s][0], M=solution[s][1], V=solution[s][2]; out+='<li><b>'+s+'</b> — Location: '+L+', Method: '+M+', Motive: '+V+'</li>'; } out+='</ul>'; return out; }
-function showEnding(success, culprit){ var box=document.getElementById('ending'); box.style.display='block'; if(success){ box.innerHTML='<h3>Case Closed</h3><p>Through deduction and resolve, you revealed the trick at the River Pier. '+culprit+' was the one hiding behind a Cover\u2011up \u2014 the folio is secured, and London greets the dawn unscathed.</p>'+revealSolution(); } else { box.innerHTML='<h3>Case Lost</h3><p>The fog grew too thick. Your chances ran out, and the courier slipped away. The folio remains missing, and the true culprit melts into London\u2019s endless night. The city wakes uneasy, secrets still at large.</p>'+revealSolution(); } }
+  /* ---------- modal + menu + toast ---------- */
+  function openModal(html){ document.getElementById('modalBody').innerHTML=html; document.getElementById('modal').classList.add('open'); }
+  function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+  var toastT=null;
+  function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+    if(toastT) clearTimeout(toastT); toastT=setTimeout(function(){ t.classList.remove('show'); },2200); }
+  function showHow(){ openModal('<h2>How to play</h2>'+
+    '<p>Every clue is true. Using only logic, work out each suspect’s <b>where</b>, <b>how</b> and <b>why</b>.</p>'+
+    '<ul><li><b>Tap</b> a chip to choose it (✓). The rest of that group is ruled out for you.</li>'+
+    '<li><b>Long-press</b> (or right-click) a chip to rule it out (✗) yourself.</li>'+
+    '<li>Switch suspects from the row of faces up top.</li>'+
+    '<li>Stuck on a hard case? Open the <b>Notebook</b> for the full cross-grid.</li>'+
+    '<li>The culprit is whoever has the <b>Cover-up</b> motive.</li>'+
+    '<li>There’s always exactly <b>one</b> provable solution — no guessing.</li></ul>'+
+    '<p>Hit <b>Make the Arrest</b> once every suspect is assigned.</p>'); }
+  function showStats(){ var s=getStats(); var wr=s.played?Math.round(100*(s.wins||0)/s.played):0;
+    openModal('<h2>Your record</h2><div class="statgrid">'+
+      '<div><div class="n">'+(s.played||0)+'</div><div class="l">Played</div></div>'+
+      '<div><div class="n">'+wr+'%</div><div class="l">Win rate</div></div>'+
+      '<div><div class="n">'+(s.curStreak||0)+'</div><div class="l">Streak</div></div>'+
+      '<div><div class="n">'+(s.maxStreak||0)+'</div><div class="l">Best</div></div></div>'+
+      '<p style="color:var(--muted);font-size:13px">Saved on this device only.</p>'); }
+  function showMenu(){ openModal('<h2>Menu</h2><div class="menulist">'+
+      '<button id="mHow">❔ How to play</button>'+
+      '<button id="mStats">📊 Your stats</button>'+
+      '<button id="mNote">📓 Detective’s Notebook</button>'+
+      '<button id="mRnd">🎲 New random case</button>'+
+      (finished?'':'<button id="mGive" class="danger">🏳️ Give up &amp; reveal</button>')+'</div>');
+    document.getElementById('mHow').onclick=function(){ showHow(); };
+    document.getElementById('mStats').onclick=function(){ showStats(); };
+    document.getElementById('mNote').onclick=function(){ openNotebook(); };
+    document.getElementById('mRnd').onclick=function(){ closeModal(); newRandom(); };
+    if(document.getElementById('mGive')) document.getElementById('mGive').onclick=function(){
+      openModal('<h2>Give up?</h2><p>The solution will be revealed and your daily streak resets.</p>'+
+        '<button class="bigbtn" id="gy" style="background:#2a1418;color:#ffb3bd">Reveal solution</button>'+
+        '<button class="bigbtn" id="gn" style="background:var(--card2);color:#cfe2ff;margin-top:8px">Keep trying</button>');
+      document.getElementById('gy').onclick=function(){ endGame(false); };
+      document.getElementById('gn').onclick=closeModal; };
+  }
 
-/* ===== Buttons & Tabs ===== */
-function wireButtons(){
-  document.getElementById('reset').onclick=function(){ SL=gridState(suspects,locations); SM=gridState(suspects,methods); SV=gridState(suspects,motives); document.getElementById('status').textContent=''; makeTables(); buildInterrogation(); applyClues(); renderAll(); showDerivedCulprit(); };
-  document.getElementById('applyClues').onclick=function(){ applyClues(); renderAll(); checkContradictions(); showDerivedCulprit(); };
-  document.getElementById('check').onclick=function(){ var s=document.getElementById('status'); if(readyToSubmit()){ var g=currentGuess(); var res=scoreGuess(g); if(res.correct){ s.textContent='Grid is a complete, correct mapping. Culprit: '+res.culprit; s.className='mini good'; } else { s.textContent='Grid is complete but not the correct mapping.'; s.className='mini warn'; } } else { s.textContent='You need exactly one \u2713 per row/column in each grid before checking.'; s.className='mini'; } };
-  document.getElementById('submit').onclick=function(){ var status=document.getElementById('status'); if(tries>=MAX_TRIES){ status.textContent='No tries left. Come back tomorrow!'; status.className='mini warn'; showEnding(false,null); return; } if(!readyToSubmit()){ status.textContent='Finish the grid first: exactly one \u2713 per row & column in all three grids.'; status.className='mini'; return; } var g=currentGuess(); var res=scoreGuess(g); tries+=1; guesses.push(g); localStorage.setItem(storeKey,String(tries)); localStorage.setItem(storeGuessesKey,JSON.stringify(guesses)); renderAll(); showDerivedCulprit(); var left=MAX_TRIES-tries; if(res.correct){ status.textContent='Solved! '+tries+'/6. ('+res.matches+'/12 pairings) Culprit: '+res.culprit+'.'; status.className='mini good'; document.getElementById('share').disabled=false; showEnding(true,res.culprit); } else { status.textContent='Not quite ('+res.matches+'/12 pairings). Culprit (by your grid): '+(res.culprit?res.culprit:'\u2014')+'. '+left+' '+(left===1?'try':'tries')+' left.'; status.className='mini warn'; if(left===0){ document.getElementById('share').disabled=false; showEnding(false,null); } } };
-  document.getElementById('share').onclick=function(){ var last=guesses[guesses.length-1]||currentGuess(); var solved=scoreGuess(last).correct; var msg=shareText(solved,tries,last); try{ navigator.clipboard.writeText(msg).then(function(){ var s=document.getElementById('status'); s.textContent='Copied result to clipboard. Paste anywhere to share!'; s.className='mini good'; }); }catch(e){ prompt('Copy your result:', msg); } };
-  // Tabs
-  var tabI=document.getElementById('tabInterrogation'); var tabB=document.getElementById('tabBoard');
-  tabI.onclick=function(){ document.getElementById('interrogationRow').classList.remove('hidden'); document.getElementById('boardRow').classList.add('hidden'); tabI.classList.add('active'); tabB.classList.remove('active'); };
-  tabB.onclick=function(){ document.getElementById('interrogationRow').classList.add('hidden'); document.getElementById('boardRow').classList.remove('hidden'); tabB.classList.add('active'); tabI.classList.remove('active'); };
-}
+  /* ---------- boot a puzzle ---------- */
+  function loadPuzzle(){
+    theme=currentTheme(); cats=theme.categories;
+    puzzle=E.generate(theme, currentSeed(), { target: currentTarget() });
+    if(!puzzle){ toast('Could not generate this case.'); return; }
+    G=E.emptyGrid(cats); elapsedMs=0; hintsUsed=0; finished=false; won=false; activeS=0;
+    if(timerStart||timerTick) stopTimer(); timerStart=null;
+    loadProgress(); if(!G) G=E.emptyGrid(cats);
+    if(finished && !won) revealOnBoard();
+    renderMeta(); renderClues(); renderRail(); renderCard(); updateArrest();
+    if(finished) showResult();
+    // Hash-gated test hook (#test). Exposes only data already derivable client-side.
+    if(/test/.test(location.hash)) window.__dd={ sol:function(){return puzzle.solution;},
+      fin:function(){return finished;}, won:function(){return won;}, diff:function(){return puzzle.difficulty;} };
+  }
+  function newRandom(){ mode='random'; randomSeed=(Math.floor(Math.random()*0xffffffff))>>>0; loadPuzzle(); }
 
-/* ===== Page Render ===== */
-function makeTables(){ makeTable('Suspect × Location',suspects,locations,SL,'gridSL'); makeTable('Suspect × Method',suspects,methods,SM,'gridSM'); makeTable('Suspect × Motive',suspects,motives,SV,'gridSV'); makeMegaTable('megaGrid'); }
-function buildAll(){ buildInterrogation(); }
-function renderAll(){ renderGrid(SL,'gridSL'); renderGrid(SM,'gridSM'); renderGrid(SV,'gridSV'); renderMega(); document.getElementById('tries').textContent='Try '+tries+' of '+MAX_TRIES; showRoles(); renderInterrogation(); }
+  /* ---------- wire ---------- */
+  document.getElementById('btnHint').onclick=giveHint;
+  document.getElementById('btnArrest').onclick=makeArrest;
+  document.getElementById('btnNotebook').onclick=openNotebook;
+  document.getElementById('btnNotebookSide').onclick=openNotebook;
+  document.getElementById('btnMenu').onclick=showMenu;
+  document.getElementById('modalClose').onclick=closeModal;
+  document.getElementById('modal').onclick=function(e){ if(e.target.id==='modal') closeModal(); };
 
-// Boot
-makeTables(); buildAll(); applyClues(); renderAll(); showDerivedCulprit(); wireButtons(); if(tries>=MAX_TRIES){ document.getElementById('share').disabled=false; }
-
-/* ===== Console self-tests ===== */
-(function(){ try{
-  // 1) Solution must score 12/12 and culprit Lin
-  var g={}; for(var i=0;i<suspects.length;i++){ var s=suspects[i]; g[s]=[solution[s][0],solution[s][1],solution[s][2]]; } var res=scoreGuess(g); console.assert(res.correct===true && res.matches===12, 'Test: solution 12/12'); console.assert(res.culprit==='Lin','Test: culprit is Lin');
-  // 2) setCell exclusivity
-  var t=gridState(suspects,locations); setCell(t,'Harper','Museum',1,suspects,locations); var rowOk=true; for(var i2=0;i2<locations.length;i2++){ var c=locations[i2]; if(c!=='Museum' && t['Harper'][c]!==-1) rowOk=false; } var colOk=true; for(var j2=0;j2<suspects.length;j2++){ var ss=suspects[j2]; if(ss!=='Harper' && t[ss]['Museum']!==-1) colOk=false; } console.assert(rowOk && colOk,'Test: exclusivity');
-  // 3) derivedCulprit when unknown
-  var g2={'Harper':[null,null,null],'Lin':[null,null,null],'Doyle':[null,null,null],'Sutton':[null,null,null]}; console.assert(derivedCulprit(g2)===null,'Test: derivedCulprit null');
-  // 4) shareText has proper newlines
-  var txt=shareText(true,1,g); console.assert(txt.indexOf('\n')>-1,'Test: shareText uses newlines');
-  // 5) mega grid cell count stays correct
-  var expected= suspects.length*(locations.length+methods.length+motives.length); var got=document.querySelectorAll('#megaGrid td.cell').length; console.assert(got===expected,'Test: mega grid cells '+got+' == '+expected);
-  // 6) interrogation selectChoice sets row to unique YES
-  selectChoice('L','Harper','Museum');
-  var ones=0; for(var k in SL['Harper']) if(SL['Harper'][k]===1) ones++; console.assert(ones===1 && SL['Harper']['Museum']===1,'Test: interrogation row exclusivity');
-  // 7) functions exist
-  console.assert(typeof renderAll==='function' && typeof wireButtons==='function','Test: functions present');
-} catch(e){ console.error('Self-tests error:', e); }})();
+  loadPuzzle();
+  try{ if(!localStorage.getItem('dd:seenHow')){ showHow(); localStorage.setItem('dd:seenHow','1'); } }catch(e){}
+})();
 </script>
 </body>
 </html>

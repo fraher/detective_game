@@ -1,0 +1,13 @@
+{
+  "name": "daily-detective",
+  "version": "0.1.0",
+  "description": "A procedurally-generated daily logic-deduction game. Static, hostable anywhere.",
+  "scripts": {
+    "test": "node test/engine.test.js",
+    "playtest": "node test/playtest.js",
+    "e2e": "node test/ui.e2e.js",
+    "verify": "node test/engine.test.js && node test/playtest.js"
+  },
+  "license": "MIT",
+  "private": true
+}
