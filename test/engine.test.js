@@ -1,0 +1,69 @@
+/* Node test harness for the deduction engine. Run: node test/engine.test.js */
+var E = require('../engine.js');
+var THEMES = require('../themes.js');
+
+var fails = 0, checks = 0;
+function assert(cond, msg) { checks++; if (!cond) { fails++; console.error('  ✗ ' + msg); } }
+
+// Verify a puzzle's clues are all TRUE for its stated solution.
+function cluesConsistent(p) {
+  var sol = p.solution; // sol[s] = [valueIdx per cat]
+  function suspOf(cat, val) { for (var s = 0; s < sol.length; s++) if (sol[s][cat] === val) return s; return -1; }
+  function linked(c1, v1, c2, v2) { return suspOf(c1, v1) === suspOf(c2, v2); }
+  for (var i = 0; i < p.clues.length; i++) {
+    var c = p.clues[i];
+    if (c.kind === 'pos' && !linked(c.e1[0], c.e1[1], c.e2[0], c.e2[1])) return false;
+    if (c.kind === 'neg' && linked(c.e1[0], c.e1[1], c.e2[0], c.e2[1])) return false;
+    if (c.kind === 'either') {
+      var a = c.a, o1 = c.opts[0], o2 = c.opts[1];
+      var l1 = linked(a[0], a[1], o1[0], o1[1]), l2 = linked(a[0], a[1], o2[0], o2[1]);
+      if (!(l1 ^ l2)) return false; // exactly one must hold
+    }
+  }
+  return true;
+}
+
+console.log('Generating puzzles across all themes and many seeds...');
+var total = 0, diffCount = {};
+THEMES.forEach(function (theme) {
+  for (var seed = 0; seed < 50; seed++) {
+    var p = E.generate(theme, E.hashStr(theme.id + ':' + seed));
+    assert(p !== null, theme.id + ' seed ' + seed + ' generated');
+    if (!p) continue;
+    total++;
+    diffCount[p.difficulty] = (diffCount[p.difficulty] || 0) + 1;
+
+    // 1) unique solution
+    var empty = E.emptyGrid(p.cats);
+    assert(E.countSolutions(p.cats, p.clues, empty, 2) === 1, theme.id + ' seed ' + seed + ' unique solution');
+    // 2) clues consistent with solution
+    assert(cluesConsistent(p), theme.id + ' seed ' + seed + ' clues consistent');
+    // 3) minimal: removing any clue breaks uniqueness
+    var minimal = true;
+    for (var k = 0; k < p.clues.length; k++) {
+      var trial = p.clues.slice(0, k).concat(p.clues.slice(k + 1));
+      if (E.countSolutions(p.cats, trial, empty, 2) === 1) { minimal = false; break; }
+    }
+    assert(minimal, theme.id + ' seed ' + seed + ' clue set is minimal');
+    // 4) culprit is the suspect tied to the guilt element
+    assert(p.solution[p.culprit][p.guilt.cat] === p.guilt.value, theme.id + ' seed ' + seed + ' culprit correct');
+  }
+});
+
+// Determinism: same seed -> identical puzzle text
+var pa = E.generate(THEMES[0], 12345), pb = E.generate(THEMES[0], 12345);
+assert(JSON.stringify(pa.clueText) === JSON.stringify(pb.clueText), 'same seed is deterministic');
+
+// Uniqueness across "30 years" of daily puzzles (theme rotates by day).
+var seen = {}, collisions = 0, DAYS = 2000;
+for (var d = 0; d < DAYS; d++) {
+  var th = THEMES[d % THEMES.length];
+  var pp = E.generate(th, E.hashStr('daily:' + d));
+  var sig = th.id + '|' + pp.clueText.slice().sort().join('§');
+  if (seen[sig]) collisions++; else seen[sig] = 1;
+}
+assert(collisions === 0, '30 years (' + DAYS + ' days) with no repeated puzzle (collisions=' + collisions + ')');
+
+console.log('\nGenerated ' + total + ' puzzles. Difficulty mix:', diffCount);
+console.log(checks + ' checks, ' + fails + ' failures.');
+process.exit(fails ? 1 : 0);
