@@ -28,6 +28,14 @@
       avatars: ['🎩', '🧥', '🕵️', '👒'],
       roles: ['a society gentleman', 'a dockside trader', 'a Yard inspector', 'a lady of the court'],
       guilt: { cat: 3, value: 3 }, // motive = Cover-up
+      flavor: {
+        search: ['Among the fog-damp stones of {place}, something catches your eye —',
+          'You work {place} by lantern-light and turn up a detail —',
+          '{place} keeps its secrets poorly tonight —'],
+        question: ['You corner {who} in the gaslight; after a pause —',
+          '{who} dabs at a brow, then lets something slip —',
+          'Pressed hard, {who} gives you this —']
+      },
       categories: [
         { id: 'suspect', label: 'Suspect', values: ['Harper', 'Lin', 'Doyle', 'Sutton'], subj: '{v}' },
         { id: 'location', label: 'Location', values: ['Duke Street', 'River Pier', 'the Museum', 'the Tea Room'],
@@ -46,6 +54,14 @@
       avatars: ['🕵️', '💃', '🎙️', '🚬'],
       roles: ['a private eye', 'a fading starlet', 'a radio man', 'a studio fixer'],
       guilt: { cat: 3, value: 3 }, // motive = Cover-up
+      flavor: {
+        search: ['You toss {place} while the rain hammers the glass —',
+          'Under the neon at {place}, something doesn’t sit right —',
+          '{place} coughs up a detail you can use —'],
+        question: ['You lean on {who} until they crack —',
+          '{who} lights a cigarette and talks through the smoke —',
+          '{who} won’t meet your eye, but says —']
+      },
       categories: [
         { id: 'suspect', label: 'Suspect', values: ['Marlowe', 'Vance', 'Reyes', 'Calloway'], subj: '{v}' },
         { id: 'location', label: 'Location', values: ['the Lot', 'Chinatown', 'the Pier', 'the Bar'],
@@ -64,6 +80,14 @@
       avatars: ['🧑🏾‍🚀', '🧑‍🚀', '🧑🏽‍🔬', '🧑🏼‍✈️'],
       roles: ['mission commander', 'systems engineer', 'lead researcher', 'flight officer'],
       guilt: { cat: 3, value: 3 }, // motive = Cover-up
+      flavor: {
+        search: ['Telemetry from {place} flags an anomaly —',
+          'You pull the logs from {place} —',
+          'A sensor sweep of {place} returns something —'],
+        question: ['You question {who} over the comm —',
+          '{who} checks the manifest, then admits —',
+          '{who} hesitates on the channel, then —']
+      },
       categories: [
         { id: 'suspect', label: 'Crew', values: ['Okafor', 'Petrov', 'Singh', 'Bauer'], subj: '{v}' },
         { id: 'location', label: 'Module', values: ['the Lab', 'the Galley', 'the Airlock', 'the Bridge'],
@@ -82,6 +106,14 @@
       avatars: ['🎩', '👰', '🧓', '🤵'],
       roles: ['the estranged heir', 'the late lord’s widow', 'the family solicitor', 'the head butler'],
       guilt: { cat: 3, value: 3 }, // motive = Cover-up
+      flavor: {
+        search: ['By candlelight you search {place} —',
+          'Something in {place} sits out of place —',
+          '{place} yields a quiet clue —'],
+        question: ['You press {who} in the drawing-room —',
+          '{who} folds their hands and confesses —',
+          '{who} glances away, then offers —']
+      },
       categories: [
         { id: 'suspect', label: 'Guest', values: ['Ashby', 'Crane', 'Wren', 'Holt'], subj: '{v}' },
         { id: 'location', label: 'Room', values: ['the Study', 'the Library', 'the Conservatory', 'the Cellar'],

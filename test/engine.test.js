@@ -49,8 +49,29 @@ THEMES.forEach(function (theme) {
     assert(minimal, theme.id + ' seed ' + seed + ' clue set is minimal');
     // 4) culprit is the suspect tied to the guilt element
     assert(p.solution[p.culprit][p.guilt.cat] === p.guilt.value, theme.id + ' seed ' + seed + ' culprit correct');
+
+    // 5) investigation: a location+suspect source per value, every clue discoverable once
+    var N = p.cats[0].values.length;
+    assert(Array.isArray(p.sources) && p.sources.length === 2 * N, theme.id + ' seed ' + seed + ' has location+suspect sources');
+    var union = {};
+    p.sources.forEach(function (s) { s.clueIdx.forEach(function (ix) { union[ix] = (union[ix] || 0) + 1; }); });
+    var everyClueOnce = p.clues.every(function (_, ix) { return union[ix] === 1; });
+    assert(everyClueOnce, theme.id + ' seed ' + seed + ' every clue attached to exactly one source');
+    // searching ALL sources surfaces ALL clues -> case is always solvable within budget
+    assert(Object.keys(union).length === p.clues.length, theme.id + ' seed ' + seed + ' all clues reachable by searching every source');
+    assert(p.minSearches >= 1 && p.minSearches <= p.sources.length, theme.id + ' seed ' + seed + ' minSearches in range');
+    // each clue carries discoverable flavor + a crisp logical restatement
+    var enriched = p.clues.every(function (c) {
+      return typeof c.flavor === 'string' && c.flavor.length > 0 && typeof c.logic === 'string' && c.source;
+    });
+    assert(enriched, theme.id + ' seed ' + seed + ' clues carry flavor + logic + source');
   }
 });
+
+// Investigation rating: every dead-end (wasted) search costs a star, floor 1.
+assert(E.investigationRating(0) === 3, 'rating: no wasted searches = 3 stars');
+assert(E.investigationRating(1) === 2, 'rating: one wasted search = 2 stars');
+assert(E.investigationRating(3) === 1, 'rating: two+ wasted searches = 1 star');
 
 // Determinism: same seed -> identical puzzle text
 var pa = E.generate(THEMES[0], 12345), pb = E.generate(THEMES[0], 12345);

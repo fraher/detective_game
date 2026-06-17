@@ -314,9 +314,14 @@
       solution.push(row);
     }
     shuffle(clues, rng); // present clues in random order
+    var clueText = clues.map(function (c) { return renderClue(c, cats); });
+    // Make the clues DISCOVERABLE instead of pre-listed: attach a source the
+    // player searches/questions + atmospheric flavor. Deterministic and uses
+    // no rng, so the underlying puzzle is byte-for-byte identical.
+    var inv = attachInvestigation(theme, cats, clues, clueText);
     return {
       themeId: theme.id, cats: cats, clues: clues,
-      clueText: clues.map(function (c) { return renderClue(c, cats); }),
+      clueText: clueText, sources: inv.sources, minSearches: inv.minSearches,
       solution: solution, culprit: suspOf(theme.guilt.cat, theme.guilt.value),
       guilt: theme.guilt, difficulty: rateDifficulty(cats, clues)
     };
@@ -366,12 +371,72 @@
     return cap(subj(cats, cl.a)) + ' either ' + pred(cats, cl.opts[0]) + ' or ' + pred(cats, cl.opts[1]) + '.';
   }
 
+  /* ----- Investigation: discoverable clue sources + flavor --------------
+   * The fun of a detective game is the *hunt*, so each clue is attached to a
+   * single source the player can investigate, rather than being listed up
+   * front:
+   *   - a LOCATION (category 1) named by the clue   -> "search the scene"
+   *   - else a SUSPECT (category 0) named by the clue -> "question them"
+   *   - else (a method×motive clue, naming neither)   -> a suspect chosen
+   *     deterministically, who "lets the detail slip".
+   * Every location and every suspect is a searchable source, so searching
+   * them all ALWAYS surfaces every clue — the case stays guaranteed solvable
+   * no matter how the player explores. Flavor framing is theme-supplied and
+   * rotates per source for variety. No rng is consumed here.              */
+  var DEFAULT_FLAVOR = {
+    search: ['A search of {place} turns up something —',
+      'You comb {place} and find a detail —',
+      '{place} gives up a clue —'],
+    question: ['Pressed for answers, {who} lets something slip —',
+      '{who} hesitates, then admits —',
+      'After some prodding, {who} reveals —']
+  };
+  function fillName(tpl, name) { return tpl.replace(/\{place\}|\{who\}/g, name); }
+  function clueSourceOf(cl, N) {
+    if (cl.kind === 'either') return { type: 'suspect', cat: 0, val: cl.a[1] };
+    var es = [cl.e1, cl.e2], i;
+    for (i = 0; i < 2; i++) if (es[i][0] === 1) return { type: 'location', cat: 1, val: es[i][1] };
+    for (i = 0; i < 2; i++) if (es[i][0] === 0) return { type: 'suspect', cat: 0, val: es[i][1] };
+    // method × motive names neither a place nor a person — pin it to a suspect
+    // deterministically so it still has somewhere to be discovered.
+    return { type: 'suspect', cat: 0, val: (cl.e1[1] + cl.e2[1]) % N };
+  }
+  function attachInvestigation(theme, cats, clues, clueText) {
+    var N = cats[0].values.length, sources = [], byKey = {}, i;
+    function key(t, v) { return t + ':' + v; }
+    for (i = 0; i < N; i++) sources.push({ type: 'location', cat: 1, val: i, key: key('location', i), clueIdx: [] });
+    for (i = 0; i < N; i++) sources.push({ type: 'suspect', cat: 0, val: i, key: key('suspect', i), clueIdx: [] });
+    sources.forEach(function (s) { byKey[s.key] = s; });
+    clues.forEach(function (cl, idx) {
+      var src = clueSourceOf(cl, N);
+      cl.source = src; cl.sourceKey = key(src.type, src.val); cl.logic = clueText[idx];
+      byKey[cl.sourceKey].clueIdx.push(idx);
+    });
+    var flav = theme.flavor || DEFAULT_FLAVOR;
+    sources.forEach(function (s) {
+      // Fall back per-key so a theme that defines only one of search/question still works.
+      var pool = (s.type === 'location' ? flav.search : flav.question) ||
+                 (s.type === 'location' ? DEFAULT_FLAVOR.search : DEFAULT_FLAVOR.question),
+        name = cats[s.cat].values[s.val];
+      s.clueIdx.forEach(function (ci, pos) { clues[ci].flavor = fillName(pool[pos % pool.length], name); });
+    });
+    var minSearches = sources.filter(function (s) { return s.clueIdx.length > 0; }).length;
+    return { sources: sources, minSearches: minSearches };
+  }
+  // Star rating for a solved case (1–3): each dead-end (a searched source that
+  // held no clue) costs a star, floored at one.
+  function investigationRating(wastedSearches) {
+    var w = Math.max(0, wastedSearches || 0);
+    return w === 0 ? 3 : (w === 1 ? 2 : 1);
+  }
+
   var API = {
     makeRng: makeRng, hashStr: hashStr, shuffle: shuffle,
     emptyGrid: emptyGrid, cloneGrid: cloneGrid, gl: gl, sl: sl,
     propagate: propagate, countSolutions: countSolutions,
     propagationSolvable: propagationSolvable, cardSolvable: cardSolvable,
-    generate: generate, renderClue: renderClue, rateDifficulty: rateDifficulty
+    generate: generate, renderClue: renderClue, rateDifficulty: rateDifficulty,
+    investigationRating: investigationRating
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

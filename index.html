@@ -124,6 +124,35 @@
   .toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#10141d;border:1px solid var(--line);
          color:var(--fg);padding:10px 16px;border-radius:999px;font-size:13px;z-index:30;opacity:0;transition:.25s;pointer-events:none}
   .toast.show{opacity:1}
+  /* investigation */
+  .inv .invhead{display:flex;align-items:center;justify-content:space-between;padding:13px 15px 4px;font-weight:700;font-size:14px}
+  .inv .invhead .cnt{color:var(--gold);font-weight:800;font-size:12.5px;font-variant-numeric:tabular-nums}
+  .invhint{margin:0 15px 4px;color:var(--muted);font-size:11.5px}
+  .invgroup{padding:6px 14px 4px}
+  .invgroup .gh{font-size:11px;font-weight:800;letter-spacing:.7px;color:var(--muted);text-transform:uppercase;margin:4px 2px 8px}
+  .srcs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .src{display:flex;align-items:center;gap:9px;text-align:left;background:var(--card2);border:1px solid var(--line);
+       border-radius:13px;padding:9px 11px;cursor:pointer;color:var(--fg);font-weight:700;font-size:13.5px;transition:.12s;font-family:inherit}
+  .src .ic{width:30px;height:30px;border-radius:9px;background:#10131c;border:1px solid var(--line);
+           display:flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 auto}
+  .src .sl{display:flex;flex-direction:column;line-height:1.18;min-width:0}
+  .src .sl .a{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .src .sl .b{font-size:11px;font-weight:600;color:var(--muted)}
+  .src:not(.done):not(.dis):hover{border-color:var(--accent);background:#222842}
+  .src.done{cursor:default}
+  .src.done.found{border-color:var(--green)} .src.done.found .ic{color:var(--green);border-color:var(--green)}
+  .src.done.found .b{color:var(--green)}
+  .src.done.empty{opacity:.5} .src.done.empty .b{color:#7a8294}
+  .src.dis{opacity:.45;cursor:not-allowed}
+  /* case file */
+  .casefile{padding:4px 15px 15px}
+  .casefile .empty{color:var(--muted);font-size:13px;padding:6px 2px;line-height:1.5}
+  .clue{background:#10131c;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:9px 12px;margin:8px 0}
+  .clue .fl{color:#c9b88a;font-style:italic;font-size:12.5px;margin:0 0 3px}
+  .clue .lg{color:#e7edf6;font-size:13.5px;font-weight:600;margin:0}
+  .clue .lg::before{content:"\2192 ";color:var(--accent);font-weight:800}
+  .rating{font-size:24px;letter-spacing:3px;color:var(--gold)}
+  .rating .off{color:#3a4150}
 </style>
 </head>
 <body>
@@ -148,9 +177,15 @@
   <div class="cols">
     <div class="card" id="card"></div>
     <div>
-      <details class="panel" id="cluesPanel">
-        <summary>📋 Clues <span class="cnt" id="clueCount"></span></summary>
-        <ol id="clues"></ol>
+      <div class="panel inv" id="invPanel">
+        <div class="invhead"><span>🔍 Investigation</span><span class="cnt" id="searchLeft"></span></div>
+        <p class="invhint">Search the scene and question suspects to uncover clues. Dead-end leads cost you stars.</p>
+        <div id="invGroups"></div>
+      </div>
+      <div style="height:12px"></div>
+      <details class="panel" id="cluesPanel" open>
+        <summary>🗂️ Case File <span class="cnt" id="clueCount"></span></summary>
+        <div id="clues" class="casefile"></div>
       </details>
       <div style="height:12px"></div>
       <button class="nbtn" id="btnNotebookSide">📓 Open the Detective’s Notebook (full grid)</button>
@@ -182,6 +217,7 @@
   var mode='daily', dayIndex=todayIndex(), randomSeed=null;
   var puzzle=null, G=null, cats=null, theme=null, activeS=0;
   var elapsedMs=0, timerStart=null, timerTick=null, hintsUsed=0, finished=false, won=false;
+  var searched={}, searchesUsed=0, rating=0;
 
   function currentSeed(){ return mode==='daily' ? E.hashStr('daily:'+dayIndex) : (randomSeed>>>0); }
   function currentTheme(){
@@ -198,9 +234,11 @@
 
   /* ---------- persistence ---------- */
   function saveProgress(){ try{ localStorage.setItem(storeKey(), JSON.stringify({
-    G:G, elapsedMs:elapsedMs+nowDelta(), hintsUsed:hintsUsed, finished:finished, won:won })); }catch(e){} }
+    G:G, elapsedMs:elapsedMs+nowDelta(), hintsUsed:hintsUsed, finished:finished, won:won,
+    searched:searched, searchesUsed:searchesUsed, rating:rating })); }catch(e){} }
   function loadProgress(){ try{ var r=localStorage.getItem(storeKey()); if(!r) return;
-    var d=JSON.parse(r); if(d.G) G=d.G; elapsedMs=d.elapsedMs||0; hintsUsed=d.hintsUsed||0; finished=!!d.finished; won=!!d.won; }catch(e){} }
+    var d=JSON.parse(r); if(d.G) G=d.G; elapsedMs=d.elapsedMs||0; hintsUsed=d.hintsUsed||0; finished=!!d.finished; won=!!d.won;
+    searched=d.searched||{}; searchesUsed=d.searchesUsed||0; rating=d.rating||0; }catch(e){} }
 
   /* ---------- stats ---------- */
   function getStats(){ try{ return JSON.parse(localStorage.getItem('dd:stats')||'{}'); }catch(e){ return {}; } }
@@ -305,11 +343,60 @@
     hint.textContent='Tap to choose ✓ · long-press to rule out ✗ · the rest update automatically';
     card.appendChild(hint);
   }
-  function renderClues(){
-    document.getElementById('clueCount').textContent='('+puzzle.clueText.length+')';
-    var ol=document.getElementById('clues'); ol.innerHTML='';
-    puzzle.clueText.forEach(function(t){ var li=document.createElement('li'); li.textContent=t; ol.appendChild(li); });
-    document.getElementById('cluesPanel').open = window.innerWidth>=900;
+  /* ---------- investigation (discovering clues) ---------- */
+  function sources(){ return puzzle.sources||[]; }
+  function srcByKey(k){ var f=null; sources().forEach(function(s){ if(s.key===k) f=s; }); return f; }
+  function srcIcon(s){ return s.type==='location'?'📍':(theme.avatars?theme.avatars[s.val]:'👤'); }
+  function srcName(s){ return cats[s.cat].values[s.val]; }
+  function srcRole(s){ return s.type==='location'?'search the scene':((theme.roles&&theme.roles[s.val])||'question them'); }
+  function discoveredSet(){ var set={},all=finished;
+    sources().forEach(function(s){ if(all||searched[s.key]) s.clueIdx.forEach(function(i){ set[i]=1; }); }); return set; }
+  function discoveredCount(){ return Object.keys(discoveredSet()).length; }
+  function wastedSearches(){ var w=0; sources().forEach(function(s){ if(searched[s.key] && !s.clueIdx.length) w++; }); return w; }
+  function starHTML(n){ return '<span class="rating">'+'★'.repeat(n)+'<span class="off">'+'★'.repeat(3-n)+'</span></span>'; }
+  function ratingLabel(n){ return n>=3?'Master Detective':(n===2?'Sharp Eye':'Got there'); }
+
+  function renderInvestigation(){
+    var total=sources().length, left=total-searchesUsed;
+    document.getElementById('searchLeft').textContent='🔎 '+left+' search'+(left===1?'':'es')+' left';
+    var wrap=document.getElementById('invGroups'); wrap.innerHTML='';
+    [['location','📍 Search the scene'],['suspect','🗣️ Question a suspect']].forEach(function(grp){
+      var g=document.createElement('div'); g.className='invgroup';
+      g.innerHTML='<div class="gh">'+grp[1]+'</div>';
+      var row=document.createElement('div'); row.className='srcs';
+      sources().filter(function(s){ return s.type===grp[0]; }).forEach(function(s){
+        (function(s){
+          var done=!!searched[s.key], found=s.clueIdx.length;
+          var b=document.createElement('button');
+          b.className='src'+(done?(found?' done found':' done empty'):(finished?' dis':''));
+          var sub=done?(found?('found '+found+' clue'+(found>1?'s':'')):'a dead end'):srcRole(s);
+          b.innerHTML='<span class="ic">'+srcIcon(s)+'</span><span class="sl"><span class="a">'+
+            (done&&found?'✓ ':'')+srcName(s)+'</span><span class="b">'+sub+'</span></span>';
+          if(!done && !finished) b.onclick=function(){ doSearch(s.key); };
+          row.appendChild(b);
+        })(s);
+      });
+      g.appendChild(row); wrap.appendChild(g);
+    });
+  }
+  function doSearch(key){ if(finished||searched[key]) return; var src=srcByKey(key); if(!src) return;
+    startTimer(); searched[key]=1; searchesUsed++; saveProgress();
+    renderInvestigation(); renderCaseFile();
+    var n=src.clueIdx.length;
+    toast(n?('🔍 '+srcName(src)+' — '+n+' clue'+(n>1?'s':'')+' added to the Case File'):('🔍 '+srcName(src)+' — a dead end.')); }
+
+  function renderCaseFile(){
+    var set=discoveredSet(), idxs=Object.keys(set).map(Number).sort(function(a,b){ return a-b; });
+    var total=puzzle.clueText.length;
+    document.getElementById('clueCount').textContent='('+idxs.length+'/'+total+')';
+    var box=document.getElementById('clues'); box.innerHTML='';
+    if(!idxs.length){ var e=document.createElement('div'); e.className='empty';
+      e.textContent='No leads yet. Search a location or question a suspect above to gather clues.'; box.appendChild(e); return; }
+    idxs.forEach(function(i){ var c=puzzle.clues[i];
+      var d=document.createElement('div'); d.className='clue';
+      var fl=document.createElement('p'); fl.className='fl'; fl.textContent=c.flavor||'';
+      var lg=document.createElement('p'); lg.className='lg'; lg.textContent=c.logic||puzzle.clueText[i];
+      d.appendChild(fl); d.appendChild(lg); box.appendChild(d); });
   }
   function updateArrest(){ document.getElementById('btnArrest').disabled = finished || !anchorComplete(); }
 
@@ -363,9 +450,12 @@
   function makeArrest(){ if(finished||!anchorComplete()) return;
     if(isCorrect()) endGame(true); else toast('The evidence doesn’t hold together — re-check the clues.'); }
   function endGame(success){
-    finished=true; won=success; stopTimer(); recordResult(success); saveProgress();
+    finished=true; won=success;
+    if(success) rating=E.investigationRating(wastedSearches());
+    stopTimer(); recordResult(success); saveProgress();
     document.getElementById('pillStreak').textContent='🔥 '+liveStreak();
     if(!success) revealOnBoard();
+    renderInvestigation(); renderCaseFile();
     renderCard(); renderRail(); updateArrest();
     showResult();
   }
@@ -382,7 +472,11 @@
     var head = won
       ? '<div class="em">🎉</div><h2>Case closed.</h2><div class="sub">You unmasked <b>'+culprit+'</b> in '+fmt(elapsedMs)+(hintsUsed?(' · '+hintsUsed+' hint'+(hintsUsed>1?'s':'')):' · no hints')+'</div>'
       : '<div class="em">🌫️</div><h2>The trail goes cold.</h2><div class="sub">The real culprit was <b>'+culprit+'</b>.</div>';
-    openModal('<div class="result">'+head+'<div class="report"><b>The official report</b>'+reportHTML()+'</div>'+
+    var ratingBlock = won
+      ? '<div style="margin:10px 0 2px">'+starHTML(rating)+'</div><div class="sub" style="color:var(--gold)">'+
+        ratingLabel(rating)+' · '+searchesUsed+' search'+(searchesUsed===1?'':'es')+' used</div>'
+      : '';
+    openModal('<div class="result">'+head+ratingBlock+'<div class="report"><b>The official report</b>'+reportHTML()+'</div>'+
       '<button class="bigbtn" id="shareBtn">📋 Share result</button>'+
       (mode==='daily'?'<button class="bigbtn" id="againBtn" style="background:var(--card2);color:#cfe2ff;margin-top:8px">🎲 Play a random case</button>'
                      :'<button class="bigbtn" id="againBtn" style="background:var(--card2);color:#cfe2ff;margin-top:8px">🎲 Another random case</button>')+'</div>');
@@ -391,7 +485,7 @@
   }
   function shareResult(){
     var label=mode==='daily'?('Daily Detective #'+(dayIndex+1)):'Daily Detective (practice)';
-    var line=won?('Solved ✓ in '+fmt(elapsedMs)+(hintsUsed?(' · 🔍 '+hintsUsed+' hint'+(hintsUsed>1?'s':'')):' · 🟢 no hints')):'Unsolved ✗';
+    var line=won?('Solved ✓ in '+fmt(elapsedMs)+'  '+'★'.repeat(rating)+'☆'.repeat(3-rating)+' · 🔎 '+searchesUsed+' search'+(searchesUsed===1?'':'es')+(hintsUsed?(' · 🔍 '+hintsUsed+' hint'+(hintsUsed>1?'s':'')):'')):'Unsolved ✗';
     var streak=mode==='daily'?('\n🔥 streak '+liveStreak()):'';
     var msg='🕵️ '+label+' — '+theme.title+'\n'+line+'\nDifficulty: '+puzzle.difficulty+streak+'\n'+location.origin+location.pathname+'\n#DailyDetective';
     if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(function(){ toast('Result copied to clipboard!'); },function(){ prompt('Copy:',msg); });
@@ -405,10 +499,12 @@
   function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
     if(toastT) clearTimeout(toastT); toastT=setTimeout(function(){ t.classList.remove('show'); },2200); }
   function showHow(){ openModal('<h2>How to play</h2>'+
-    '<p>Every clue is true. Using only logic, work out each suspect’s <b>where</b>, <b>how</b> and <b>why</b>.</p>'+
-    '<ul><li><b>Tap</b> a chip to choose it (✓). The rest of that group is ruled out for you.</li>'+
+    '<p>Crack the case with <b>investigation</b> and <b>logic</b>. Every clue you uncover is true.</p>'+
+    '<ul><li><b>🔍 Investigate</b> — search locations and question suspects to uncover clues. Each one lands in your <b>Case File</b>.</li>'+
+    '<li>Search smart: a <b>dead-end lead costs you a star</b>. Solve with no wasted searches for <b>★★★ Master Detective</b>.</li>'+
+    '<li>From the clues, work out each suspect’s <b>where</b>, <b>how</b> and <b>why</b>.</li>'+
+    '<li><b>Tap</b> a chip to choose it (✓). The rest of that group is ruled out for you.</li>'+
     '<li><b>Long-press</b> (or right-click) a chip to rule it out (✗) yourself.</li>'+
-    '<li>Switch suspects from the row of faces up top.</li>'+
     '<li>Stuck on a hard case? Open the <b>Notebook</b> for the full cross-grid.</li>'+
     '<li>The culprit is whoever has the <b>Cover-up</b> motive.</li>'+
     '<li>There’s always exactly <b>one</b> provable solution — no guessing.</li></ul>'+
@@ -444,14 +540,21 @@
     puzzle=E.generate(theme, currentSeed(), { target: currentTarget() });
     if(!puzzle){ toast('Could not generate this case.'); return; }
     G=E.emptyGrid(cats); elapsedMs=0; hintsUsed=0; finished=false; won=false; activeS=0;
+    searched={}; searchesUsed=0; rating=0;
     if(timerStart||timerTick) stopTimer(); timerStart=null;
     loadProgress(); if(!G) G=E.emptyGrid(cats);
+    // Migrate a win saved before ratings existed: recompute from its searches.
+    if(finished && won && !rating) rating=E.investigationRating(wastedSearches());
     if(finished && !won) revealOnBoard();
-    renderMeta(); renderClues(); renderRail(); renderCard(); updateArrest();
+    renderMeta(); renderInvestigation(); renderCaseFile(); renderRail(); renderCard(); updateArrest();
     if(finished) showResult();
     // Hash-gated test hook (#test). Exposes only data already derivable client-side.
     if(/test/.test(location.hash)) window.__dd={ sol:function(){return puzzle.solution;},
-      fin:function(){return finished;}, won:function(){return won;}, diff:function(){return puzzle.difficulty;} };
+      fin:function(){return finished;}, won:function(){return won;}, diff:function(){return puzzle.difficulty;},
+      found:function(){return discoveredCount();}, searches:function(){return searchesUsed;},
+      min:function(){return puzzle.minSearches;}, total:function(){return puzzle.clueText.length;},
+      rating:function(){return rating;}, sources:function(){return sources().map(function(s){return s.key;});},
+      search:function(k){ doSearch(k); } };
   }
   function newRandom(){ mode='random'; randomSeed=(Math.floor(Math.random()*0xffffffff))>>>0; loadPuzzle(); }
 

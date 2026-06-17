@@ -5,10 +5,21 @@
  *   reload · Notebook reflects edits · give-up reveals the solution.
  * Run: node test/ui.e2e.js   (uses the bundled Chromium)
  */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const path = require('path');
+const fs = require('fs');
+// Resolve Playwright from wherever it lives (local install, global, or the
+// original bundled path). Run once: `npm install && npx playwright install chromium`.
+function loadPlaywright() {
+  const tries = [process.env.PW_MODULE, 'playwright', 'playwright-core',
+    '/opt/node22/lib/node_modules/playwright'].filter(Boolean);
+  for (const t of tries) { try { return require(t); } catch (e) { /* try next */ } }
+  console.error('Playwright not found. Install once with:\n  npm install\n  npx playwright install chromium');
+  process.exit(2);
+}
+const { chromium } = loadPlaywright();
 const URL = 'file://' + path.resolve(__dirname, '..', 'index.html') + '#test';
-const EXE = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+// Use an explicit Chromium if one is provided/known; else Playwright's managed one.
+const EXE = process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
 let pass = 0, fail = 0;
 function ok(cond, label) { if (cond) { pass++; console.log('  ✓ ' + label); } else { fail++; console.error('  ✗ ' + label); } }
@@ -17,7 +28,9 @@ const chip = (c, v) => `#card .seg:nth-child(${c + 1}) .chip:nth-child(${v + 1})
 const cls = (page, sel) => page.getAttribute(sel, 'class');
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: EXE, args: ['--no-sandbox'] });
+  const launchOpts = { headless: true, args: ['--no-sandbox'] };
+  if (EXE && fs.existsSync(EXE)) launchOpts.executablePath = EXE;
+  const browser = await chromium.launch(launchOpts);
   const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
@@ -42,11 +55,27 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   await page.click(chip(2, 0), { button: 'right' }); // How value0 -> rule out
   ok(/\boff\b/.test(await cls(page, chip(2, 0))), 'right-click/long-press rules out a chip');
 
+  // 4b) INVESTIGATION — clues are DISCOVERED, not pre-listed
+  const totalClues = await page.evaluate(() => window.__dd.total());
+  ok(await page.evaluate(() => window.__dd.found()) === 0, 'case file starts empty (no clues pre-listed)');
+  const srcKeys = await page.evaluate(() => window.__dd.sources());
+  ok(srcKeys.length === 8, 'eight investigable sources (4 locations + 4 suspects)');
+  const before = await page.evaluate(() => window.__dd.searches());
+  await page.evaluate(() => window.__dd.search(window.__dd.sources()[0]));
+  ok(await page.evaluate(() => window.__dd.searches()) === before + 1, 'searching a source consumes a search');
+  await page.evaluate(() => window.__dd.sources().forEach(k => window.__dd.search(k)));
+  ok(await page.evaluate(() => window.__dd.found()) === totalClues, 'searching every source reveals every clue (always reachable)');
+  ok((await page.$$('#clues .clue')).length === totalClues, 'each discovered clue renders in the Case File');
+  ok((await page.$$('#invGroups .src.done')).length === 8, 'searched sources mark as done');
+
   // 5) full solve -> arrest enables -> win modal -> streak increments
   const sol = await page.evaluate(() => window.__dd.sol());
   for (let s = 0; s < sol.length; s++) {
     await page.click(`#rail .face:nth-child(${s + 1})`);
-    for (let c = 1; c < sol[s].length; c++) await page.click(chip(c, sol[s][c]));
+    for (let c = 1; c < sol[s].length; c++) {
+      const sel = chip(c, sol[s][c]); // idempotent: clicking an already-✓ chip would toggle it back off
+      if (!/\bon\b/.test(await cls(page, sel))) await page.click(sel);
+    }
   }
   ok(await page.getAttribute('#btnArrest', 'disabled') === null, 'arrest enables once every suspect is assigned');
   await page.click('#btnArrest');
@@ -54,9 +83,11 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   ok(/Case closed/.test(await page.textContent('#modalBody')), 'correct solution wins the case');
   ok(await page.evaluate(() => window.__dd.won()) === true, 'engine marks the case won');
   ok(/🔥 [1-9]/.test(await page.textContent('#pillStreak')), 'streak increments on a win');
+  ok([1, 2, 3].includes(await page.evaluate(() => window.__dd.rating())), 'a 1–3 star detective rating is recorded on the win');
+  ok(/★/.test(await page.textContent('#modalBody')), 'win screen shows the detective rating');
 
   // 6) persistence: reload resumes the finished/won state
-  await page.goto(URL, { waitUntil: 'networkidle' });
+  await page.reload({ waitUntil: 'networkidle' });
   ok(await page.evaluate(() => window.__dd.fin()) === true, 'finished state persists across reload');
 
   // 7) Notebook reflects edits (open, click a cell, it marks)
@@ -75,6 +106,21 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   await page.click('#gy'); await page.waitForTimeout(250);
   ok(/trail goes cold/.test(await page.textContent('#modalBody')), 'give-up reveals the solution (loss state)');
   ok(await page.evaluate(() => window.__dd.fin()) === true && await page.evaluate(() => window.__dd.won()) === false, 'give-up records a loss');
+
+  // 9) migration: downgrade the saved daily win to a pre-rating save (drop the new
+  //    fields the old build never wrote), reload, and confirm it still rates 1–3 stars.
+  const stripped = await page.evaluate(() => {
+    const k = Object.keys(localStorage).find(x => x.startsWith('dd:day:'));
+    if (!k) return false;
+    const d = JSON.parse(localStorage.getItem(k));
+    delete d.rating; delete d.searched; delete d.searchesUsed;
+    localStorage.setItem(k, JSON.stringify(d));
+    return true;
+  });
+  ok(stripped, 'found the saved daily win to downgrade to a pre-rating save');
+  await page.reload({ waitUntil: 'networkidle' });
+  ok([1, 2, 3].includes(await page.evaluate(() => window.__dd.rating())), 'a pre-rating saved win migrates to a valid rating');
+  ok(/★/.test(await page.textContent('#modalBody')), 'migrated win still shows stars (no 0-star result)');
 
   ok(errors.length === 0, 'no uncaught page errors (' + (errors[0] || 'none') + ')');
 
