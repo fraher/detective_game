@@ -40,6 +40,12 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   // 1) arrest disabled at start
   ok(await page.getAttribute('#btnArrest', 'disabled') !== null, 'arrest is disabled before solving');
 
+  // 1b) two-tab layout: start on Investigate, switch to Solve to work the board
+  ok((await page.$('#tabBtnSolve')) !== null, 'two-tab layout is present');
+  ok(await page.getAttribute('#tabInvestigate', 'hidden') === null, 'fresh case opens on the Investigate tab');
+  await page.click('#tabBtnSolve');
+  ok(await page.getAttribute('#tabSolve', 'hidden') === null, 'Solve tab reveals the deduction board');
+
   // 2) tap-to-select auto-eliminates the rest of that group (suspect 0, Where)
   await page.click('#rail .face:nth-child(1)');
   await page.click(chip(1, 0)); // suspect0 Where value0
@@ -67,6 +73,7 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   ok(await page.evaluate(() => window.__dd.found()) === totalClues, 'searching every source reveals every clue (always reachable)');
   ok((await page.$$('#clues .clue')).length === totalClues, 'each discovered clue renders in the Case File');
   ok((await page.$$('#invGroups .src.done')).length === 8, 'searched sources mark as done');
+  ok((await page.textContent('#badgeSolve')) === String(totalClues), 'Solve tab badge reflects discovered clue count');
 
   // 5) full solve -> arrest enables -> win modal -> streak increments
   const sol = await page.evaluate(() => window.__dd.sol());
@@ -101,6 +108,9 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   await page.click('#btnMenu'); await page.waitForTimeout(80);
   await page.click('#mRnd'); await page.waitForTimeout(200);
   ok(await page.evaluate(() => window.__dd.fin()) === false, 'random case starts unsolved');
+  // 8b) the new-clue nudge resets per case (regression: solveSeen must not leak across cases)
+  await page.evaluate(() => { for (const k of window.__dd.sources()) { window.__dd.search(k); if (window.__dd.found() > 0) break; } });
+  ok(/\bpulse\b/.test((await page.getAttribute('#badgeSolve', 'class')) || ''), 'Solve-tab nudge pulses for clues found in a fresh case');
   await page.click('#btnMenu'); await page.waitForTimeout(80);
   await page.click('#mGive'); await page.waitForTimeout(80);
   await page.click('#gy'); await page.waitForTimeout(250);

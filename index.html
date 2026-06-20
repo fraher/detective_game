@@ -15,7 +15,7 @@
   body{background:radial-gradient(1200px 500px at 50% -10%,#1b2030 0%,transparent 60%),var(--bg);
        color:var(--fg);font:16px/1.45 -apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial}
   button{font-family:inherit}
-  .wrap{max-width:980px;margin:0 auto;padding-bottom:96px}
+  .wrap{max-width:620px;margin:0 auto;padding-bottom:96px}
   /* top bar */
   .top{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;
        padding:12px 16px;background:rgba(14,16,22,.86);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
@@ -153,6 +153,20 @@
   .clue .lg::before{content:"\2192 ";color:var(--accent);font-weight:800}
   .rating{font-size:24px;letter-spacing:3px;color:var(--gold)}
   .rating .off{color:#3a4150}
+  /* tabs */
+  .tabs{display:flex;gap:8px;padding:12px 16px 4px}
+  .tab{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--card);
+       border:1px solid var(--line);color:var(--muted);border-radius:13px;padding:12px 10px;font-weight:800;font-size:14.5px;cursor:pointer}
+  .tab.active{color:var(--fg);border-color:var(--accent);background:linear-gradient(180deg,#1b2030,#161b27)}
+  .tbadge{min-width:21px;height:21px;padding:0 6px;border-radius:999px;background:var(--card2);color:var(--fg);
+          font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);font-variant-numeric:tabular-nums}
+  .tbadge:empty{display:none}
+  .tab.active .tbadge{background:var(--accent);color:#06142e;border-color:transparent}
+  .tbadge.pulse{background:var(--gold);color:#3a2a00;border-color:transparent;animation:tbpulse 1s ease-in-out infinite}
+  @keyframes tbpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+  .tabpanel{padding:6px 0 4px}
+  .tabpanel[hidden]{display:none}
+  #tabSolve .rail{padding-top:8px}
 </style>
 </head>
 <body>
@@ -167,32 +181,36 @@
     </div>
   </div>
 
-  <!-- AD SLOT (top). Drop AdSense/Ezoic markup here. -->
-  <div class="adslot" id="adTop">ad slot · responsive leaderboard</div>
-
-  <p class="brief" id="briefText">…</p>
-
-  <div class="rail" id="rail"></div>
-
-  <div class="cols">
-    <div class="card" id="card"></div>
-    <div>
-      <div class="panel inv" id="invPanel">
-        <div class="invhead"><span>🔍 Investigation</span><span class="cnt" id="searchLeft"></span></div>
-        <p class="invhint">Search the scene and question suspects to uncover clues. Dead-end leads cost you stars.</p>
-        <div id="invGroups"></div>
-      </div>
-      <div style="height:12px"></div>
-      <details class="panel" id="cluesPanel" open>
-        <summary>🗂️ Case File <span class="cnt" id="clueCount"></span></summary>
-        <div id="clues" class="casefile"></div>
-      </details>
-      <div style="height:12px"></div>
-      <button class="nbtn" id="btnNotebookSide">📓 Open the Detective’s Notebook (full grid)</button>
-      <!-- AD SLOT (in-content). -->
-      <div class="adslot" id="adSide" style="margin:14px 0 0">ad slot · 300×250</div>
-    </div>
+  <!-- two-tab play surface: gather clues, then deduce -->
+  <div class="tabs" role="tablist">
+    <button class="tab active" id="tabBtnInvestigate" role="tab">🔍 Investigate<span class="tbadge" id="badgeInv"></span></button>
+    <button class="tab" id="tabBtnSolve" role="tab">🧩 Solve<span class="tbadge" id="badgeSolve"></span></button>
   </div>
+
+  <!-- INVESTIGATE: hunt for clues -->
+  <section class="tabpanel" id="tabInvestigate">
+    <p class="brief" id="briefText">…</p>
+    <div class="panel inv" id="invPanel">
+      <div class="invhead"><span>🔍 Where to look</span><span class="cnt" id="searchLeft"></span></div>
+      <p class="invhint">Search the scene and question suspects to uncover clues. Dead-end leads cost you stars.</p>
+      <div id="invGroups"></div>
+    </div>
+    <div style="height:12px"></div>
+    <details class="panel" id="cluesPanel" open>
+      <summary>🗂️ Case File <span class="cnt" id="clueCount"></span></summary>
+      <div id="clues" class="casefile"></div>
+    </details>
+  </section>
+
+  <!-- SOLVE: deduce on the board -->
+  <section class="tabpanel" id="tabSolve" hidden>
+    <div class="rail" id="rail"></div>
+    <div class="card" id="card"></div>
+    <button class="nbtn" id="btnNotebookSide">📓 Open the Detective’s Notebook (full grid)</button>
+  </section>
+
+  <!-- AD SLOT (discreet, out of the play path). Drop AdSense/Ezoic markup here. -->
+  <div class="adslot" id="adBottom">ad slot</div>
 </div>
 
 <div class="bar">
@@ -217,7 +235,7 @@
   var mode='daily', dayIndex=todayIndex(), randomSeed=null;
   var puzzle=null, G=null, cats=null, theme=null, activeS=0;
   var elapsedMs=0, timerStart=null, timerTick=null, hintsUsed=0, finished=false, won=false;
-  var searched={}, searchesUsed=0, rating=0;
+  var searched={}, searchesUsed=0, rating=0, activeTab='investigate', solveSeen=0;
 
   function currentSeed(){ return mode==='daily' ? E.hashStr('daily:'+dayIndex) : (randomSeed>>>0); }
   function currentTheme(){
@@ -353,6 +371,24 @@
     sources().forEach(function(s){ if(all||searched[s.key]) s.clueIdx.forEach(function(i){ set[i]=1; }); }); return set; }
   function discoveredCount(){ return Object.keys(discoveredSet()).length; }
   function wastedSearches(){ var w=0; sources().forEach(function(s){ if(searched[s.key] && !s.clueIdx.length) w++; }); return w; }
+
+  /* ---------- tabs (investigate · solve) ---------- */
+  function setTab(name){
+    activeTab=name; var inv=name==='investigate';
+    document.getElementById('tabInvestigate').hidden=!inv;
+    document.getElementById('tabSolve').hidden=inv;
+    document.getElementById('tabBtnInvestigate').classList.toggle('active',inv);
+    document.getElementById('tabBtnSolve').classList.toggle('active',!inv);
+    if(!inv) solveSeen=discoveredCount();   // visiting Solve clears the "new clues" nudge
+    renderTabs(); window.scrollTo(0,0);
+  }
+  function renderTabs(){
+    var total=sources().length, left=total-searchesUsed, clues=discoveredCount();
+    document.getElementById('badgeInv').textContent = (finished||!left)?'':String(left);
+    var bs=document.getElementById('badgeSolve');
+    bs.textContent = clues?String(clues):'';
+    bs.classList.toggle('pulse', activeTab==='investigate' && clues>solveSeen);
+  }
   function starHTML(n){ return '<span class="rating">'+'★'.repeat(n)+'<span class="off">'+'★'.repeat(3-n)+'</span></span>'; }
   function ratingLabel(n){ return n>=3?'Master Detective':(n===2?'Sharp Eye':'Got there'); }
 
@@ -381,7 +417,7 @@
   }
   function doSearch(key){ if(finished||searched[key]) return; var src=srcByKey(key); if(!src) return;
     startTimer(); searched[key]=1; searchesUsed++; saveProgress();
-    renderInvestigation(); renderCaseFile();
+    renderInvestigation(); renderCaseFile(); renderTabs();
     var n=src.clueIdx.length;
     toast(n?('🔍 '+srcName(src)+' — '+n+' clue'+(n>1?'s':'')+' added to the Case File'):('🔍 '+srcName(src)+' — a dead end.')); }
 
@@ -446,7 +482,7 @@
     for(var s=0;s<N;s++) for(var c=1;c<cats.length;c++){ var v=puzzle.solution[s][c]; if(E.gl(G,0,c,s,v)!==1) opts.push([c,s,v]); }
     if(!opts.length){ toast('Nothing left to reveal — make the arrest!'); return; }
     var p=opts[Math.floor(Math.random()*opts.length)]; setYesExcl(0,p[0],p[1],p[2]); hintsUsed++;
-    activeS=p[1]; afterChange(); renderRail(); toast('Hint revealed ('+hintsUsed+' used)'); }
+    activeS=p[1]; setTab('solve'); afterChange(); renderRail(); toast('Hint revealed ('+hintsUsed+' used)'); }
   function makeArrest(){ if(finished||!anchorComplete()) return;
     if(isCorrect()) endGame(true); else toast('The evidence doesn’t hold together — re-check the clues.'); }
   function endGame(success){
@@ -455,7 +491,7 @@
     stopTimer(); recordResult(success); saveProgress();
     document.getElementById('pillStreak').textContent='🔥 '+liveStreak();
     if(!success) revealOnBoard();
-    renderInvestigation(); renderCaseFile();
+    renderInvestigation(); renderCaseFile(); renderTabs();
     renderCard(); renderRail(); updateArrest();
     showResult();
   }
@@ -540,13 +576,14 @@
     puzzle=E.generate(theme, currentSeed(), { target: currentTarget() });
     if(!puzzle){ toast('Could not generate this case.'); return; }
     G=E.emptyGrid(cats); elapsedMs=0; hintsUsed=0; finished=false; won=false; activeS=0;
-    searched={}; searchesUsed=0; rating=0;
+    searched={}; searchesUsed=0; rating=0; solveSeen=0;
     if(timerStart||timerTick) stopTimer(); timerStart=null;
     loadProgress(); if(!G) G=E.emptyGrid(cats);
     // Migrate a win saved before ratings existed: recompute from its searches.
     if(finished && won && !rating) rating=E.investigationRating(wastedSearches());
     if(finished && !won) revealOnBoard();
     renderMeta(); renderInvestigation(); renderCaseFile(); renderRail(); renderCard(); updateArrest();
+    setTab((finished || discoveredCount()>0) ? 'solve' : 'investigate');
     if(finished) showResult();
     // Hash-gated test hook (#test). Exposes only data already derivable client-side.
     if(/test/.test(location.hash)) window.__dd={ sol:function(){return puzzle.solution;},
@@ -559,6 +596,8 @@
   function newRandom(){ mode='random'; randomSeed=(Math.floor(Math.random()*0xffffffff))>>>0; loadPuzzle(); }
 
   /* ---------- wire ---------- */
+  document.getElementById('tabBtnInvestigate').onclick=function(){ setTab('investigate'); };
+  document.getElementById('tabBtnSolve').onclick=function(){ setTab('solve'); };
   document.getElementById('btnHint').onclick=giveHint;
   document.getElementById('btnArrest').onclick=makeArrest;
   document.getElementById('btnNotebook').onclick=openNotebook;
