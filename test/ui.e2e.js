@@ -93,6 +93,18 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   ok([1, 2, 3].includes(await page.evaluate(() => window.__dd.rating())), 'a 1–3 star detective rating is recorded on the win');
   ok(/★/.test(await page.textContent('#modalBody')), 'win screen shows the detective rating');
 
+  // 5b) meta-progression: the win is recorded, personal bests + badges update
+  ok(await page.evaluate(() => window.__dd.stats().wins) >= 1, 'the daily win is recorded in stats');
+  ok(await page.evaluate(() => Object.keys(window.__dd.history()).length) >= 1, 'the day is recorded in play history');
+  ok(typeof (await page.evaluate(() => window.__dd.stats().bestMs)) === 'number', 'a fastest-solve personal best is stored');
+  ok(await page.evaluate(() => !!window.__dd.achievements().first), 'the First Case badge unlocks on a win');
+  ok(await page.evaluate(() => !!window.__dd.achievements().nohints), 'the no-hints badge unlocks (e2e used no hints)');
+  ok(/🔥 Streak/.test(await page.textContent('#modalBody')), 'post-solve screen shows the stats strip');
+  await page.click('#statsBtn'); await page.waitForTimeout(120);
+  ok((await page.$$('#modalBody .hcell')).length === 35, 'stats screen renders a 35-day history grid');
+  ok((await page.$$('#modalBody .ach')).length === 8, 'stats screen renders all achievement badges');
+  ok((await page.$$('#modalBody .ach.on')).length >= 1, 'at least one badge shows unlocked');
+
   // 6) persistence: reload resumes the finished/won state
   await page.reload({ waitUntil: 'networkidle' });
   ok(await page.evaluate(() => window.__dd.fin()) === true, 'finished state persists across reload');
@@ -108,6 +120,7 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   await page.click('#btnMenu'); await page.waitForTimeout(80);
   await page.click('#mRnd'); await page.waitForTimeout(200);
   ok(await page.evaluate(() => window.__dd.fin()) === false, 'random case starts unsolved');
+  ok(await page.evaluate(() => window.__dd.newBadges()) === 0, 'badge unlocks from the daily do not leak into a new case');
   // 8b) the new-clue nudge resets per case (regression: solveSeen must not leak across cases)
   await page.evaluate(() => { for (const k of window.__dd.sources()) { window.__dd.search(k); if (window.__dd.found() > 0) break; } });
   ok(/\bpulse\b/.test((await page.getAttribute('#badgeSolve', 'class')) || ''), 'Solve-tab nudge pulses for clues found in a fresh case');

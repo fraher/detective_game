@@ -167,6 +167,31 @@
   .tabpanel{padding:6px 0 4px}
   .tabpanel[hidden]{display:none}
   #tabSolve .rail{padding-top:8px}
+  /* stats screen */
+  .statgrid.two{grid-template-columns:repeat(2,1fr)}
+  .statgrid.mini{margin:12px 0 2px}
+  .statgrid.mini .n{font-size:23px}
+  .sh{font-size:11px;font-weight:800;letter-spacing:.7px;color:var(--muted);text-transform:uppercase;margin:16px 2px 9px}
+  .dist{display:flex;flex-direction:column;gap:6px}
+  .drow{display:flex;align-items:center;gap:9px;font-size:13px}
+  .drow .dl{color:var(--gold);width:44px;font-size:12px;letter-spacing:1px}
+  .drow .dbar{flex:1;height:11px;background:#10131c;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .drow .dbar>span{display:block;height:100%;background:linear-gradient(90deg,#6aa6ff,#37d39a);min-width:0}
+  .drow .dn{width:26px;text-align:right;color:var(--muted);font-weight:800;font-variant-numeric:tabular-nums}
+  .hgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+  .hcell{aspect-ratio:1;border-radius:4px;background:#161b27;border:1px solid var(--line)}
+  .hcell.win{background:var(--green);border-color:transparent}
+  .hcell.loss{background:#5a1f2a;border-color:#7a2a36}
+  .hcell.today{outline:2px solid var(--gold);outline-offset:1px}
+  .achhead{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:800;letter-spacing:.7px;color:var(--muted);text-transform:uppercase;margin:16px 2px 9px}
+  .achhead .cnt{color:var(--gold)}
+  .achgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .ach{display:flex;align-items:center;gap:9px;background:#10131c;border:1px solid var(--line);border-radius:11px;padding:9px 11px;opacity:.45}
+  .ach.on{opacity:1;border-color:var(--gold)}
+  .ach .ai{font-size:20px;filter:grayscale(1)}
+  .ach.on .ai{filter:none}
+  .ach .an{font-size:12.5px;font-weight:700;line-height:1.1}
+  .newbadges{background:#1c2a16;border:1px solid #3c5a26;color:#c4e8a4;border-radius:11px;padding:10px 12px;margin:10px 0 2px;font-weight:700;font-size:13px;text-align:center}
 </style>
 </head>
 <body>
@@ -235,7 +260,7 @@
   var mode='daily', dayIndex=todayIndex(), randomSeed=null;
   var puzzle=null, G=null, cats=null, theme=null, activeS=0;
   var elapsedMs=0, timerStart=null, timerTick=null, hintsUsed=0, finished=false, won=false;
-  var searched={}, searchesUsed=0, rating=0, activeTab='investigate', solveSeen=0;
+  var searched={}, searchesUsed=0, rating=0, activeTab='investigate', solveSeen=0, newlyUnlocked=[];
 
   function currentSeed(){ return mode==='daily' ? E.hashStr('daily:'+dayIndex) : (randomSeed>>>0); }
   function currentTheme(){
@@ -258,16 +283,45 @@
     var d=JSON.parse(r); if(d.G) G=d.G; elapsedMs=d.elapsedMs||0; hintsUsed=d.hintsUsed||0; finished=!!d.finished; won=!!d.won;
     searched=d.searched||{}; searchesUsed=d.searchesUsed||0; rating=d.rating||0; }catch(e){} }
 
-  /* ---------- stats ---------- */
+  /* ---------- stats · history · achievements ---------- */
   function getStats(){ try{ return JSON.parse(localStorage.getItem('dd:stats')||'{}'); }catch(e){ return {}; } }
   function setStats(s){ try{ localStorage.setItem('dd:stats', JSON.stringify(s)); }catch(e){} }
+  function getHistory(){ try{ return JSON.parse(localStorage.getItem('dd:history')||'{}'); }catch(e){ return {}; } }
+  function setHistory(h){ try{ localStorage.setItem('dd:history', JSON.stringify(h)); }catch(e){} }
+  function getAch(){ try{ return JSON.parse(localStorage.getItem('dd:ach')||'{}'); }catch(e){ return {}; } }
+  function setAch(a){ try{ localStorage.setItem('dd:ach', JSON.stringify(a)); }catch(e){} }
+
+  // Unlockable badges. test(ctx) gets {won, ms, hints, rating, searches, stats(after update)}.
+  var ACHIEVEMENTS=[
+    { id:'first',   ic:'🎯', name:'First Case',      desc:'Win your first case',        test:function(c){ return c.won && (c.stats.wins||0)>=1; } },
+    { id:'nohints', ic:'🧠', name:'Unaided',         desc:'Win using no hints',         test:function(c){ return c.won && c.hints===0; } },
+    { id:'master',  ic:'⭐', name:'Master Detective',desc:'Solve with a ★★★ rating',   test:function(c){ return c.won && c.rating>=3; } },
+    { id:'flawless',ic:'🕵️', name:'Flawless',        desc:'★★★ and no hints',          test:function(c){ return c.won && c.rating>=3 && c.hints===0; } },
+    { id:'quick',   ic:'⚡', name:'Quick Study',     desc:'Solve in under 2 minutes',   test:function(c){ return c.won && c.ms>0 && c.ms<120000; } },
+    { id:'streak3', ic:'🔥', name:'On a Roll',       desc:'Reach a 3-day streak',       test:function(c){ return (c.stats.curStreak||0)>=3; } },
+    { id:'streak7', ic:'📅', name:'Dedicated',       desc:'Reach a 7-day streak',       test:function(c){ return (c.stats.curStreak||0)>=7; } },
+    { id:'cases10', ic:'📚', name:'Seasoned',        desc:'Solve 10 cases',             test:function(c){ return (c.stats.wins||0)>=10; } }
+  ];
+  function checkAchievements(ctx){
+    var a=getAch(), changed=false; newlyUnlocked=[];
+    ACHIEVEMENTS.forEach(function(ach){ if(!a[ach.id] && ach.test(ctx)){ a[ach.id]=true; newlyUnlocked.push(ach); changed=true; } });
+    if(changed) setAch(a);
+  }
   function recordResult(success){
     if(mode!=='daily') return;
-    var s=getStats(); if(s.lastResultDay===dayIndex) return;
+    var s=getStats(); if(s.lastResultDay===dayIndex) return;   // count each day once
     s.played=(s.played||0)+1;
-    if(success){ s.wins=(s.wins||0)+1; s.curStreak=(s.lastWinDay===dayIndex-1)?(s.curStreak||0)+1:1; s.lastWinDay=dayIndex; s.maxStreak=Math.max(s.maxStreak||0,s.curStreak); }
-    else { s.curStreak=0; }
+    if(success){
+      s.wins=(s.wins||0)+1;
+      s.curStreak=(s.lastWinDay===dayIndex-1)?(s.curStreak||0)+1:1;
+      s.lastWinDay=dayIndex; s.maxStreak=Math.max(s.maxStreak||0,s.curStreak);
+      if(!s.bestMs || elapsedMs<s.bestMs) s.bestMs=elapsedMs;   // personal best time
+      s.dist=s.dist||{}; s.dist[rating]=(s.dist[rating]||0)+1;  // rating distribution
+      if(hintsUsed===0) s.noHintWins=(s.noHintWins||0)+1;
+    } else { s.curStreak=0; }
     s.lastResultDay=dayIndex; setStats(s);
+    var h=getHistory(); h[dayIndex]={ w:success?1:0, ms:success?elapsedMs:0, r:success?rating:0, h:hintsUsed }; setHistory(h);
+    checkAchievements({ won:success, ms:elapsedMs, hints:hintsUsed, rating:rating, searches:searchesUsed, stats:s });
   }
   function liveStreak(){ var s=getStats(); return (s.lastWinDay===dayIndex||s.lastWinDay===dayIndex-1)?(s.curStreak||0):0; }
 
@@ -512,11 +566,20 @@
       ? '<div style="margin:10px 0 2px">'+starHTML(rating)+'</div><div class="sub" style="color:var(--gold)">'+
         ratingLabel(rating)+' · '+searchesUsed+' search'+(searchesUsed===1?'':'es')+' used</div>'
       : '';
-    openModal('<div class="result">'+head+ratingBlock+'<div class="report"><b>The official report</b>'+reportHTML()+'</div>'+
+    var st=getStats(), wr=st.played?Math.round(100*(st.wins||0)/st.played):0;
+    var statsStrip = (mode==='daily') ? ('<div class="statgrid mini">'+
+      '<div><div class="n">'+(st.curStreak||0)+'</div><div class="l">🔥 Streak</div></div>'+
+      '<div><div class="n">'+(st.maxStreak||0)+'</div><div class="l">Best</div></div>'+
+      '<div><div class="n">'+(st.played||0)+'</div><div class="l">Played</div></div>'+
+      '<div><div class="n">'+wr+'%</div><div class="l">Win %</div></div></div>') : '';
+    var badges = (won && mode==='daily' && newlyUnlocked.length) ? ('<div class="newbadges">🏅 New badge'+(newlyUnlocked.length>1?'s':'')+': '+
+      newlyUnlocked.map(function(a){ return a.ic+' '+a.name; }).join(' · ')+'</div>') : '';
+    openModal('<div class="result">'+head+ratingBlock+statsStrip+badges+'<div class="report"><b>The official report</b>'+reportHTML()+'</div>'+
       '<button class="bigbtn" id="shareBtn">📋 Share result</button>'+
-      (mode==='daily'?'<button class="bigbtn" id="againBtn" style="background:var(--card2);color:#cfe2ff;margin-top:8px">🎲 Play a random case</button>'
-                     :'<button class="bigbtn" id="againBtn" style="background:var(--card2);color:#cfe2ff;margin-top:8px">🎲 Another random case</button>')+'</div>');
+      (mode==='daily'?'<button class="bigbtn" id="statsBtn" style="background:var(--card2);color:#cfe2ff;margin-top:8px">📊 Your stats &amp; badges</button>':'')+
+      '<button class="bigbtn" id="againBtn" style="background:var(--card2);color:#cfe2ff;margin-top:8px">🎲 '+(mode==='daily'?'Play a random case':'Another random case')+'</button></div>');
     document.getElementById('shareBtn').onclick=shareResult;
+    var sb=document.getElementById('statsBtn'); if(sb) sb.onclick=showStats;
     document.getElementById('againBtn').onclick=function(){ closeModal(); newRandom(); };
   }
   function shareResult(){
@@ -545,13 +608,40 @@
     '<li>The culprit is whoever has the <b>Cover-up</b> motive.</li>'+
     '<li>There’s always exactly <b>one</b> provable solution — no guessing.</li></ul>'+
     '<p>Hit <b>Make the Arrest</b> once every suspect is assigned.</p>'); }
+  function fmtMaybe(ms){ return ms?fmt(ms):'—'; }
+  function distHTML(s){
+    var d=s.dist||{}, max=Math.max(1,d[1]||0,d[2]||0,d[3]||0), rows='';
+    [3,2,1].forEach(function(n){ var c=d[n]||0;
+      rows+='<div class="drow"><span class="dl">'+'★'.repeat(n)+'</span><span class="dbar"><span style="width:'+Math.round(100*c/max)+'%"></span></span><span class="dn">'+c+'</span></div>'; });
+    return '<div class="dist">'+rows+'</div>';
+  }
+  function historyHTML(){
+    var h=getHistory(), DAYS=35, cells='';
+    for(var i=DAYS-1;i>=0;i--){ var d=dayIndex-i, r=h[d];
+      var cls=r?(r.w?'win':'loss'):(d<dayIndex?'miss':'miss');
+      cells+='<span class="hcell '+cls+(d===dayIndex?' today':'')+'" title="Case #'+(d+1)+(r?(r.w?' · solved':' · missed'):'')+'"></span>'; }
+    return '<div class="hgrid">'+cells+'</div>';
+  }
+  function achievementsHTML(){
+    var a=getAch(), got=0;
+    var items=ACHIEVEMENTS.map(function(ach){ var on=!!a[ach.id]; if(on)got++;
+      return '<div class="ach'+(on?' on':'')+'" title="'+ach.desc+'"><span class="ai">'+ach.ic+'</span><span class="an">'+ach.name+'</span></div>'; }).join('');
+    return '<div class="achhead"><span>Badges</span><span class="cnt">'+got+'/'+ACHIEVEMENTS.length+'</span></div><div class="achgrid">'+items+'</div>';
+  }
   function showStats(){ var s=getStats(); var wr=s.played?Math.round(100*(s.wins||0)/s.played):0;
-    openModal('<h2>Your record</h2><div class="statgrid">'+
+    openModal('<h2>Your record</h2>'+
+      '<div class="statgrid">'+
+      '<div><div class="n">'+(s.curStreak||0)+'</div><div class="l">🔥 Streak</div></div>'+
+      '<div><div class="n">'+(s.maxStreak||0)+'</div><div class="l">Best streak</div></div>'+
       '<div><div class="n">'+(s.played||0)+'</div><div class="l">Played</div></div>'+
-      '<div><div class="n">'+wr+'%</div><div class="l">Win rate</div></div>'+
-      '<div><div class="n">'+(s.curStreak||0)+'</div><div class="l">Streak</div></div>'+
-      '<div><div class="n">'+(s.maxStreak||0)+'</div><div class="l">Best</div></div></div>'+
-      '<p style="color:var(--muted);font-size:13px">Saved on this device only.</p>'); }
+      '<div><div class="n">'+wr+'%</div><div class="l">Win rate</div></div></div>'+
+      '<div class="statgrid two">'+
+      '<div><div class="n">'+fmtMaybe(s.bestMs)+'</div><div class="l">⏱ Best time</div></div>'+
+      '<div><div class="n">'+((s.dist&&s.dist[3])||0)+'</div><div class="l">⭐ ★★★ cases</div></div></div>'+
+      '<h3 class="sh">Rating distribution</h3>'+distHTML(s)+
+      '<h3 class="sh">Last 35 days</h3>'+historyHTML()+
+      achievementsHTML()+
+      '<p style="color:var(--muted);font-size:12px;margin-top:12px">Saved on this device only.</p>'); }
   function showMenu(){ openModal('<h2>Menu</h2><div class="menulist">'+
       '<button id="mHow">❔ How to play</button>'+
       '<button id="mStats">📊 Your stats</button>'+
@@ -576,7 +666,7 @@
     puzzle=E.generate(theme, currentSeed(), { target: currentTarget() });
     if(!puzzle){ toast('Could not generate this case.'); return; }
     G=E.emptyGrid(cats); elapsedMs=0; hintsUsed=0; finished=false; won=false; activeS=0;
-    searched={}; searchesUsed=0; rating=0; solveSeen=0;
+    searched={}; searchesUsed=0; rating=0; solveSeen=0; newlyUnlocked=[];
     if(timerStart||timerTick) stopTimer(); timerStart=null;
     loadProgress(); if(!G) G=E.emptyGrid(cats);
     // Migrate a win saved before ratings existed: recompute from its searches.
@@ -591,7 +681,9 @@
       found:function(){return discoveredCount();}, searches:function(){return searchesUsed;},
       min:function(){return puzzle.minSearches;}, total:function(){return puzzle.clueText.length;},
       rating:function(){return rating;}, sources:function(){return sources().map(function(s){return s.key;});},
-      search:function(k){ doSearch(k); } };
+      search:function(k){ doSearch(k); },
+      stats:function(){return getStats();}, history:function(){return getHistory();}, achievements:function(){return getAch();},
+      newBadges:function(){return newlyUnlocked.length;} };
   }
   function newRandom(){ mode='random'; randomSeed=(Math.floor(Math.random()*0xffffffff))>>>0; loadPuzzle(); }
 
