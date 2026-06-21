@@ -314,9 +314,14 @@
       solution.push(row);
     }
     shuffle(clues, rng); // present clues in random order
+    var clueText = clues.map(function (c) { return renderClue(c, cats); });
+    // Make the clues DISCOVERABLE instead of pre-listed: attach a source the
+    // player searches/questions + atmospheric flavor. Deterministic and uses
+    // no rng, so the underlying puzzle is byte-for-byte identical.
+    var inv = attachInvestigation(theme, cats, clues, clueText);
     return {
       themeId: theme.id, cats: cats, clues: clues,
-      clueText: clues.map(function (c) { return renderClue(c, cats); }),
+      clueText: clueText, sources: inv.sources, minSearches: inv.minSearches,
       solution: solution, culprit: suspOf(theme.guilt.cat, theme.guilt.value),
       guilt: theme.guilt, difficulty: rateDifficulty(cats, clues)
     };
@@ -329,10 +334,13 @@
   function generate(theme, seed, opts) {
     opts = opts || {};
     var rng = makeRng(seed >>> 0), cats = theme.categories, fallback = null;
-    for (var attempt = 0; attempt < 60; attempt++) {
+    for (var attempt = 0; attempt < 80; attempt++) {
       var perm = randomSolution(cats, rng);
       var clues = carveLogicalSet(cats, perm, rng);
       if (!clues) continue;
+      // opts.cardSolvable: only serve cases solvable straight from the clues (no
+      // cross-grid needed) — the game has no logic-grid notebook anymore.
+      if (opts.cardSolvable && !cardSolvable(cats, clues)) continue;
       var puzzle = assemble(theme, cats, perm, clues, rng);
       if (!opts.target || puzzle.difficulty === opts.target) return puzzle;
       if (!fallback) fallback = puzzle;
@@ -366,12 +374,143 @@
     return cap(subj(cats, cl.a)) + ' either ' + pred(cats, cl.opts[0]) + ' or ' + pred(cats, cl.opts[1]) + '.';
   }
 
+  /* ----- Investigation: discoverable clue sources + flavor --------------
+   * The fun of a detective game is the *hunt*, so each clue is attached to a
+   * single source the player can investigate, rather than being listed up
+   * front:
+   *   - a LOCATION (category 1) named by the clue   -> "search the scene"
+   *   - else a SUSPECT (category 0) named by the clue -> "question them"
+   *   - else (a method×motive clue, naming neither)   -> a suspect chosen
+   *     deterministically, who "lets the detail slip".
+   * Every location and every suspect is a searchable source, so searching
+   * them all ALWAYS surfaces every clue — the case stays guaranteed solvable
+   * no matter how the player explores. Flavor framing is theme-supplied and
+   * rotates per source for variety. No rng is consumed here.              */
+  var DEFAULT_FLAVOR = {
+    search: ['A search of {place} turns up something —',
+      'You comb {place} and find a detail —',
+      '{place} gives up a clue —'],
+    question: ['Pressed for answers, {who} lets something slip —',
+      '{who} hesitates, then admits —',
+      'After some prodding, {who} reveals —']
+  };
+  function fillName(tpl, name) { return tpl.replace(/\{place\}|\{who\}/g, name); }
+  function clueSourceOf(cl, N) {
+    if (cl.kind === 'either') return { type: 'suspect', cat: 0, val: cl.a[1] };
+    var es = [cl.e1, cl.e2], i;
+    for (i = 0; i < 2; i++) if (es[i][0] === 1) return { type: 'location', cat: 1, val: es[i][1] };
+    for (i = 0; i < 2; i++) if (es[i][0] === 0) return { type: 'suspect', cat: 0, val: es[i][1] };
+    // method × motive names neither a place nor a person — surface it as scene
+    // evidence at a location (deterministic) so QUESTIONING a suspect only ever
+    // reveals things about THAT suspect, never abstract facts about others.
+    return { type: 'location', cat: 1, val: (cl.e1[1] + cl.e2[1]) % N };
+  }
+  function attachInvestigation(theme, cats, clues, clueText) {
+    var N = cats[0].values.length, sources = [], byKey = {}, i;
+    function key(t, v) { return t + ':' + v; }
+    for (i = 0; i < N; i++) sources.push({ type: 'location', cat: 1, val: i, key: key('location', i), clueIdx: [] });
+    for (i = 0; i < N; i++) sources.push({ type: 'suspect', cat: 0, val: i, key: key('suspect', i), clueIdx: [] });
+    sources.forEach(function (s) { byKey[s.key] = s; });
+    clues.forEach(function (cl, idx) {
+      var src = clueSourceOf(cl, N);
+      cl.source = src; cl.sourceKey = key(src.type, src.val); cl.logic = clueText[idx];
+      byKey[cl.sourceKey].clueIdx.push(idx);
+    });
+    var flav = theme.flavor || DEFAULT_FLAVOR;
+    sources.forEach(function (s) {
+      // Fall back per-key so a theme that defines only one of search/question still works.
+      var pool = (s.type === 'location' ? flav.search : flav.question) ||
+                 (s.type === 'location' ? DEFAULT_FLAVOR.search : DEFAULT_FLAVOR.question),
+        name = cats[s.cat].values[s.val];
+      s.clueIdx.forEach(function (ci, pos) { clues[ci].flavor = fillName(pool[pos % pool.length], name); });
+    });
+    var minSearches = sources.filter(function (s) { return s.clueIdx.length > 0; }).length;
+    return { sources: sources, minSearches: minSearches };
+  }
+  /* ----- Deterministic completeness certificate ------------------------
+   * Run on ANY case to certify it is fair. Returns:
+   *   solvable   - at least one solution is consistent with the clues
+   *   unique     - EXACTLY one solution exists (no ambiguity)
+   *   sufficient - that solution is reachable by pure logic, no guessing
+   *                (the clues are enough to deduce it)
+   *   minimal    - no clue is redundant (every clue is needed)
+   *   ok         - solvable AND unique AND sufficient
+   * Deterministic: same (cats, clues) always yields the same certificate.   */
+  function verify(catsOrPuzzle, maybeClues) {
+    var cats = maybeClues ? catsOrPuzzle : catsOrPuzzle.cats;
+    var clues = maybeClues ? maybeClues : catsOrPuzzle.clues;
+    var count = countSolutions(cats, clues, emptyGrid(cats), 2); // capped at 2
+    var solvable = count >= 1, unique = count === 1, sufficient = propagationSolvable(cats, clues);
+    var minimal = true;
+    for (var k = 0; k < clues.length; k++) {
+      if (propagationSolvable(cats, clues.slice(0, k).concat(clues.slice(k + 1)))) { minimal = false; break; }
+    }
+    return {
+      ok: solvable && unique && sufficient, solvable: solvable, unique: unique,
+      sufficient: sufficient, minimal: minimal, solutionCount: count, clueCount: clues.length
+    };
+  }
+
+  // Star rating for a solved case (1–3): each dead-end (a searched source that
+  // held no clue) costs a star, floored at one.
+  function investigationRating(wastedSearches) {
+    var w = Math.max(0, wastedSearches || 0);
+    return w === 0 ? 3 : (w === 1 ? 2 : 1);
+  }
+
+  /* ----- Accusation: name the culprit, not the whole grid ----------------
+   * The player builds ONE accusation about the culprit: acc = { 0:suspectIdx,
+   * 1:locationVal, 2:methodVal, 3:motiveVal } (any subset while in progress).
+   * accusationConflicts() finds which of the DISCOVERED clues the accusation
+   * directly contradicts, so the UI can light them — and the picks that caused
+   * them — red. It reasons only about the accused suspect S (no full solve),
+   * which is exactly what the player can see; deep deduction lives in the
+   * Notebook. accusationCorrect() checks a finished accusation against truth. */
+  function accusationConflicts(cats, clues, discoveredIdx, acc) {
+    var S = acc[0];
+    // Does value `val` of category `cat` belong to the accused culprit S?
+    function belongs(cat, val) {
+      if (cat === 0) return S == null ? 'unknown' : (val === S ? 'yes' : 'no');
+      if (acc[cat] == null) return 'unknown';
+      return acc[cat] === val ? 'yes' : 'no';
+    }
+    function link(cA, vA, cB, vB) {        // are these two the same person, per the accusation?
+      var a = belongs(cA, vA), b = belongs(cB, vB);
+      if (a === 'yes' && b === 'yes') return 'yes';
+      if ((a === 'yes' && b === 'no') || (a === 'no' && b === 'yes')) return 'no';
+      return 'unknown';
+    }
+    var badClues = [], badCats = {};
+    (discoveredIdx || []).forEach(function (i) {
+      var cl = clues[i], bad = false, ents;
+      if (cl.kind === 'either') {
+        var l1 = link(0, cl.a[1], cl.opts[0][0], cl.opts[0][1]),
+          l2 = link(0, cl.a[1], cl.opts[1][0], cl.opts[1][1]);
+        bad = (l1 === 'yes' && l2 === 'yes') || (l1 === 'no' && l2 === 'no');
+        ents = [0, cl.opts[0][0], cl.opts[1][0]];
+      } else {
+        var st = link(cl.e1[0], cl.e1[1], cl.e2[0], cl.e2[1]);
+        bad = (cl.kind === 'pos' && st === 'no') || (cl.kind === 'neg' && st === 'yes');
+        ents = [cl.e1[0], cl.e2[0]];
+      }
+      if (bad) { badClues.push(i); ents.forEach(function (c) { if (c === 0 || acc[c] != null) badCats[c] = true; }); }
+    });
+    return { clues: badClues, cats: badCats };
+  }
+  function accusationCorrect(solution, culprit, acc) {
+    if (acc[0] !== culprit) return false;
+    for (var c = 1; c < solution[culprit].length; c++) if (acc[c] !== solution[culprit][c]) return false;
+    return true;
+  }
+
   var API = {
     makeRng: makeRng, hashStr: hashStr, shuffle: shuffle,
     emptyGrid: emptyGrid, cloneGrid: cloneGrid, gl: gl, sl: sl,
     propagate: propagate, countSolutions: countSolutions,
     propagationSolvable: propagationSolvable, cardSolvable: cardSolvable,
-    generate: generate, renderClue: renderClue, rateDifficulty: rateDifficulty
+    generate: generate, renderClue: renderClue, rateDifficulty: rateDifficulty,
+    investigationRating: investigationRating, verify: verify,
+    accusationConflicts: accusationConflicts, accusationCorrect: accusationCorrect
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
