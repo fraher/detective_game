@@ -430,13 +430,59 @@
     return w === 0 ? 3 : (w === 1 ? 2 : 1);
   }
 
+  /* ----- Accusation: name the culprit, not the whole grid ----------------
+   * The player builds ONE accusation about the culprit: acc = { 0:suspectIdx,
+   * 1:locationVal, 2:methodVal, 3:motiveVal } (any subset while in progress).
+   * accusationConflicts() finds which of the DISCOVERED clues the accusation
+   * directly contradicts, so the UI can light them — and the picks that caused
+   * them — red. It reasons only about the accused suspect S (no full solve),
+   * which is exactly what the player can see; deep deduction lives in the
+   * Notebook. accusationCorrect() checks a finished accusation against truth. */
+  function accusationConflicts(cats, clues, discoveredIdx, acc) {
+    var S = acc[0];
+    // Does value `val` of category `cat` belong to the accused culprit S?
+    function belongs(cat, val) {
+      if (cat === 0) return S == null ? 'unknown' : (val === S ? 'yes' : 'no');
+      if (acc[cat] == null) return 'unknown';
+      return acc[cat] === val ? 'yes' : 'no';
+    }
+    function link(cA, vA, cB, vB) {        // are these two the same person, per the accusation?
+      var a = belongs(cA, vA), b = belongs(cB, vB);
+      if (a === 'yes' && b === 'yes') return 'yes';
+      if ((a === 'yes' && b === 'no') || (a === 'no' && b === 'yes')) return 'no';
+      return 'unknown';
+    }
+    var badClues = [], badCats = {};
+    (discoveredIdx || []).forEach(function (i) {
+      var cl = clues[i], bad = false, ents;
+      if (cl.kind === 'either') {
+        var l1 = link(0, cl.a[1], cl.opts[0][0], cl.opts[0][1]),
+          l2 = link(0, cl.a[1], cl.opts[1][0], cl.opts[1][1]);
+        bad = (l1 === 'yes' && l2 === 'yes') || (l1 === 'no' && l2 === 'no');
+        ents = [0, cl.opts[0][0], cl.opts[1][0]];
+      } else {
+        var st = link(cl.e1[0], cl.e1[1], cl.e2[0], cl.e2[1]);
+        bad = (cl.kind === 'pos' && st === 'no') || (cl.kind === 'neg' && st === 'yes');
+        ents = [cl.e1[0], cl.e2[0]];
+      }
+      if (bad) { badClues.push(i); ents.forEach(function (c) { if (c === 0 || acc[c] != null) badCats[c] = true; }); }
+    });
+    return { clues: badClues, cats: badCats };
+  }
+  function accusationCorrect(solution, culprit, acc) {
+    if (acc[0] !== culprit) return false;
+    for (var c = 1; c < solution[culprit].length; c++) if (acc[c] !== solution[culprit][c]) return false;
+    return true;
+  }
+
   var API = {
     makeRng: makeRng, hashStr: hashStr, shuffle: shuffle,
     emptyGrid: emptyGrid, cloneGrid: cloneGrid, gl: gl, sl: sl,
     propagate: propagate, countSolutions: countSolutions,
     propagationSolvable: propagationSolvable, cardSolvable: cardSolvable,
     generate: generate, renderClue: renderClue, rateDifficulty: rateDifficulty,
-    investigationRating: investigationRating
+    investigationRating: investigationRating,
+    accusationConflicts: accusationConflicts, accusationCorrect: accusationCorrect
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

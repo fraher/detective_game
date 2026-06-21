@@ -192,6 +192,25 @@
   .ach.on .ai{filter:none}
   .ach .an{font-size:12.5px;font-weight:700;line-height:1.1}
   .newbadges{background:#1c2a16;border:1px solid #3c5a26;color:#c4e8a4;border-radius:11px;padding:10px 12px;margin:10px 0 2px;font-weight:700;font-size:13px;text-align:center}
+  /* accusation board */
+  .ahead{margin:2px 2px 12px;color:var(--muted);font-size:13px;line-height:1.4}
+  .ahead b{color:var(--fg)}
+  .accuse{display:flex;flex-direction:column;gap:14px}
+  .aseg .lab{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;letter-spacing:.8px;color:var(--muted);text-transform:uppercase;margin:0 2px 8px}
+  .aseg.bad .lab{color:var(--red)}
+  .arow{display:flex;flex-wrap:wrap;gap:8px}
+  .achip{flex:1 1 calc(50% - 8px);min-height:46px;display:flex;align-items:center;justify-content:center;gap:5px;
+         background:var(--card2);border:1px solid var(--line);border-radius:13px;font-weight:700;font-size:14px;color:var(--fg);
+         padding:6px 8px;cursor:pointer;font-family:inherit;transition:.12s;user-select:none}
+  .achip .amk{color:var(--green);font-weight:900;font-size:13px}
+  .achip:not(.on):hover{border-color:var(--accent)}
+  .achip.on{background:linear-gradient(180deg,#1b3b6b,#16315a);border-color:var(--accent);color:#cfe2ff}
+  .achip.guilt.on{background:linear-gradient(180deg,#5a1f2a,#46101a);border-color:var(--gold);color:#ffe6b0}
+  .achip.bad{background:linear-gradient(180deg,#4a1620,#380f16);border-color:var(--red);color:#ffd0d6;animation:badpulse .35s ease}
+  @keyframes badpulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+  .conflict{background:#2a1418;border:1px solid #5a2530;color:#ffb3bd;border-radius:11px;padding:10px 12px;margin:14px 0 0;font-size:12.5px;font-weight:600;line-height:1.4}
+  .clue.bad{border-left-color:var(--red);background:#1c1014}
+  .clue.bad .lg{color:#ffd0d6}
 </style>
 </head>
 <body>
@@ -229,9 +248,12 @@
 
   <!-- SOLVE: deduce on the board -->
   <section class="tabpanel" id="tabSolve" hidden>
-    <div class="rail" id="rail"></div>
-    <div class="card" id="card"></div>
-    <button class="nbtn" id="btnNotebookSide">📓 Open the Detective’s Notebook (full grid)</button>
+    <div class="card">
+      <p class="ahead">Build your case — name the <b>culprit</b>, then their <b>where</b>, <b>how</b> &amp; <b>why</b>. Picks that clash with a clue turn <b style="color:var(--red)">red</b>.</p>
+      <div class="accuse" id="accuse"></div>
+      <div class="conflict" id="conflictMsg" hidden></div>
+    </div>
+    <button class="nbtn" id="btnNotebookSide">📓 Open the Detective’s Notebook (work it out)</button>
   </section>
 
   <!-- AD SLOT (discreet, out of the play path). Drop AdSense/Ezoic markup here. -->
@@ -258,7 +280,7 @@
   var EPOCH = Date.UTC(2026,0,1);
   function todayIndex(){ return Math.floor((Date.now() - EPOCH)/86400000); }
   var mode='daily', dayIndex=todayIndex(), randomSeed=null;
-  var puzzle=null, G=null, cats=null, theme=null, activeS=0;
+  var puzzle=null, G=null, cats=null, theme=null, activeS=0, acc={};
   var elapsedMs=0, timerStart=null, timerTick=null, hintsUsed=0, finished=false, won=false;
   var searched={}, searchesUsed=0, rating=0, activeTab='investigate', solveSeen=0, newlyUnlocked=[];
 
@@ -278,10 +300,10 @@
   /* ---------- persistence ---------- */
   function saveProgress(){ try{ localStorage.setItem(storeKey(), JSON.stringify({
     G:G, elapsedMs:elapsedMs+nowDelta(), hintsUsed:hintsUsed, finished:finished, won:won,
-    searched:searched, searchesUsed:searchesUsed, rating:rating })); }catch(e){} }
+    searched:searched, searchesUsed:searchesUsed, rating:rating, acc:acc })); }catch(e){} }
   function loadProgress(){ try{ var r=localStorage.getItem(storeKey()); if(!r) return;
     var d=JSON.parse(r); if(d.G) G=d.G; elapsedMs=d.elapsedMs||0; hintsUsed=d.hintsUsed||0; finished=!!d.finished; won=!!d.won;
-    searched=d.searched||{}; searchesUsed=d.searchesUsed||0; rating=d.rating||0; }catch(e){} }
+    searched=d.searched||{}; searchesUsed=d.searchesUsed||0; rating=d.rating||0; acc=d.acc||{}; }catch(e){} }
 
   /* ---------- stats · history · achievements ---------- */
   function getStats(){ try{ return JSON.parse(localStorage.getItem('dd:stats')||'{}'); }catch(e){ return {}; } }
@@ -333,29 +355,25 @@
   function stopTimer(){ if(timerStart){ elapsedMs+=nowDelta(); timerStart=null; } if(timerTick){ clearInterval(timerTick); timerTick=null; }
     document.getElementById('pillTimer').textContent='⏱ '+fmt(elapsedMs); }
 
-  /* ---------- grid logic ---------- */
+  /* ---------- grid logic (Notebook scratchpad only) ---------- */
   function setYesExcl(a,b,i,j){ var N=cats[0].values.length; E.sl(G,a,b,i,j,1);
     // exactly-one per row/column: force every other cell to ✗, overriding any prior ✓
     for(var n=0;n<N;n++){ if(n!==j && E.gl(G,a,b,i,n)!==-1) E.sl(G,a,b,i,n,-1); }
     for(var m=0;m<N;m++){ if(m!==i && E.gl(G,a,b,m,j)!==-1) E.sl(G,a,b,m,j,-1); } }
-  function derivedAssign(){ var N=cats[0].values.length,out=[null];
-    for(var c=1;c<cats.length;c++){ out[c]=[]; for(var s=0;s<N;s++){ var v=-1; for(var j=0;j<N;j++) if(E.gl(G,0,c,s,j)===1){ v=j; break; } out[c][s]=v; } } return out; }
-  function suspectProgress(s){ var n=0; for(var c=1;c<cats.length;c++){ for(var j=0;j<cats[0].values.length;j++) if(E.gl(G,0,c,s,j)===1){ n++; break; } } return n; }
-  function anchorComplete(){ var N=cats[0].values.length,a=derivedAssign();
-    for(var c=1;c<cats.length;c++){ var seen={}; for(var s=0;s<N;s++){ var v=a[c][s]; if(v<0||seen[v]) return false; seen[v]=1; } } return true; }
-  function isCorrect(){ var a=derivedAssign();
-    for(var s=0;s<cats[0].values.length;s++) for(var c=1;c<cats.length;c++) if(a[c][s]!==puzzle.solution[s][c]) return false; return true; }
 
-  /* ---------- chip interaction ---------- */
-  function chipTap(c,v){ if(finished) return; startTimer();
-    var cur=E.gl(G,0,c,activeS,v);
-    if(cur===1) E.sl(G,0,c,activeS,v,0); else setYesExcl(0,c,activeS,v);
-    afterChange(); }
-  function chipRuleOut(c,v){ if(finished) return; startTimer();
-    var cur=E.gl(G,0,c,activeS,v);
-    E.sl(G,0,c,activeS,v, cur===-1?0:-1);
-    afterChange(); }
-  function afterChange(){ saveProgress(); renderCard(); renderRail(); renderNotebook(); updateArrest(); }
+  /* ---------- accusation (name the culprit, not the whole grid) ---------- */
+  var accConflicts={ clues:[], cats:{} };
+  function accComplete(){ return acc[0]!=null && acc[1]!=null && acc[2]!=null && acc[3]!=null; }
+  function computeConflicts(){
+    var any = acc[0]!=null||acc[1]!=null||acc[2]!=null||acc[3]!=null;
+    accConflicts = any ? E.accusationConflicts(cats, puzzle.clues, Object.keys(discoveredSet()).map(Number), acc)
+                       : { clues:[], cats:{} };
+    return accConflicts;
+  }
+  function setAccuse(c,v){ if(finished) return; startTimer();
+    acc[c] = (acc[c]===v) ? null : v;   // tap the chosen one again to clear it
+    afterAcc(); }
+  function afterAcc(){ computeConflicts(); saveProgress(); renderAccusation(); renderCaseFile(); renderTabs(); updateArrest(); }
 
   /* ---------- rendering ---------- */
   function renderMeta(){
@@ -367,53 +385,30 @@
     document.getElementById('pillStreak').textContent='🔥 '+liveStreak();
     document.getElementById('briefText').innerHTML=theme.intro;
   }
-  function renderRail(){
-    var rail=document.getElementById('rail'); rail.innerHTML='';
-    for(var s=0;s<cats[0].values.length;s++){
-      (function(s){
-        var b=document.createElement('button'); b.className='face'+(s===activeS?' active':'');
-        var prog=suspectProgress(s), dotCls=prog===cats.length-1?'dot full':(prog>0?'dot part':'dot');
-        b.innerHTML='<div class="ava">'+(theme.avatars?theme.avatars[s]:'👤')+
-          '<span class="'+dotCls+'">'+(prog===cats.length-1?'✓':'')+'</span></div><div class="nm">'+cats[0].values[s]+'</div>';
-        b.onclick=function(){ activeS=s; renderCard(); renderRail(); };
-        rail.appendChild(b);
-      })(s);
-    }
-  }
-  function renderCard(){
-    var card=document.getElementById('card'); card.innerHTML='';
-    var icons=['','📍','🛠️','🎭'], labels=['','Where','How','Why'];
-    var who=document.createElement('div'); who.className='who';
-    who.innerHTML='<div class="big">'+(theme.avatars?theme.avatars[activeS]:'👤')+'</div>'+
-      '<div><h2>'+cats[0].values[activeS]+'</h2><p>'+((theme.roles&&theme.roles[activeS])||'a suspect')+'</p></div>';
-    card.appendChild(who);
-    for(var c=1;c<cats.length;c++){
-      (function(c){
-        var seg=document.createElement('div'); seg.className='seg';
-        seg.innerHTML='<div class="lab"><span>'+(icons[c]||'•')+'</span> '+(labels[c]||cats[c].label)+'</div>';
-        var row=document.createElement('div'); row.className='row';
-        for(var v=0;v<cats[c].values.length;v++){
-          (function(v){
-            var val=E.gl(G,0,c,activeS,v);
-            var isGuilt=(c===theme.guilt.cat && v===theme.guilt.value);
-            var chip=document.createElement('div');
-            chip.className='chip'+(isGuilt?' guilt':'')+(val===1?' on':(val===-1?' off':''));
-            chip.innerHTML='<span class="mk">'+(val===1?(isGuilt?'★':'✓'):(val===-1?'✗':''))+'</span>'+cats[c].values[v];
-            chip.onclick=function(){ chipTap(c,v); };
-            chip.oncontextmenu=function(e){ e.preventDefault(); chipRuleOut(c,v); };
-            var tmr=null;
-            chip.addEventListener('touchstart',function(){ tmr=setTimeout(function(){ tmr=null; chipRuleOut(c,v); }, 420); },{passive:true});
-            chip.addEventListener('touchend',function(e){ if(tmr){ clearTimeout(tmr); } else { e.preventDefault(); } });
-            chip.addEventListener('touchmove',function(){ if(tmr){ clearTimeout(tmr); tmr=null; } });
-            row.appendChild(chip);
-          })(v);
-        }
-        seg.appendChild(row); card.appendChild(seg);
-      })(c);
-    }
-    var hint=document.createElement('p'); hint.className='hintline';
-    hint.textContent='Tap to choose ✓ · long-press to rule out ✗ · the rest update automatically';
-    card.appendChild(hint);
+  function renderAccusation(){
+    computeConflicts();
+    var wrap=document.getElementById('accuse'); wrap.innerHTML='';
+    var rows=[{c:0,ic:'👤',lab:'Who'},{c:1,ic:'📍',lab:'Where'},{c:2,ic:'🛠️',lab:'How'},{c:3,ic:'🎭',lab:'Why'}];
+    rows.forEach(function(r){
+      var c=r.c, seg=document.createElement('div'); seg.className='aseg'+(accConflicts.cats[c]?' bad':'');
+      seg.innerHTML='<div class="lab"><span>'+r.ic+'</span> '+r.lab+'</div>';
+      var row=document.createElement('div'); row.className='arow';
+      for(var v=0;v<cats[c].values.length;v++){
+        (function(v){
+          var sel=acc[c]===v, isGuilt=(c===theme.guilt.cat && v===theme.guilt.value);
+          var chip=document.createElement('button');
+          chip.className='achip'+(sel?' on':'')+(sel&&accConflicts.cats[c]?' bad':'')+(isGuilt&&sel?' guilt':'');
+          var ico = c===0 ? ((theme.avatars&&theme.avatars[v])||'👤')+' ' : '';
+          chip.innerHTML='<span class="amk">'+(sel?'✓':'')+'</span>'+ico+cats[c].values[v];
+          if(!finished) chip.onclick=function(){ setAccuse(c,v); };
+          row.appendChild(chip);
+        })(v);
+      }
+      seg.appendChild(row); wrap.appendChild(seg);
+    });
+    var cm=document.getElementById('conflictMsg'), nc=accConflicts.clues.length;
+    if(nc){ cm.hidden=false; cm.textContent='⚠ Your case contradicts '+nc+' clue'+(nc>1?'s':'')+' you’ve found — the red leads in the Case File can’t all be true.'; }
+    else { cm.hidden=true; cm.textContent=''; }
   }
   /* ---------- investigation (discovering clues) ---------- */
   function sources(){ return puzzle.sources||[]; }
@@ -471,11 +466,12 @@
   }
   function doSearch(key){ if(finished||searched[key]) return; var src=srcByKey(key); if(!src) return;
     startTimer(); searched[key]=1; searchesUsed++; saveProgress();
-    renderInvestigation(); renderCaseFile(); renderTabs();
+    renderInvestigation(); renderCaseFile(); renderAccusation(); renderTabs(); updateArrest();
     var n=src.clueIdx.length;
     toast(n?('🔍 '+srcName(src)+' — '+n+' clue'+(n>1?'s':'')+' added to the Case File'):('🔍 '+srcName(src)+' — a dead end.')); }
 
   function renderCaseFile(){
+    computeConflicts();
     var set=discoveredSet(), idxs=Object.keys(set).map(Number).sort(function(a,b){ return a-b; });
     var total=puzzle.clueText.length;
     document.getElementById('clueCount').textContent='('+idxs.length+'/'+total+')';
@@ -483,12 +479,13 @@
     if(!idxs.length){ var e=document.createElement('div'); e.className='empty';
       e.textContent='No leads yet. Search a location or question a suspect above to gather clues.'; box.appendChild(e); return; }
     idxs.forEach(function(i){ var c=puzzle.clues[i];
-      var d=document.createElement('div'); d.className='clue';
+      var d=document.createElement('div'); d.className='clue'+(accConflicts.clues.indexOf(i)>=0?' bad':'');
       var fl=document.createElement('p'); fl.className='fl'; fl.textContent=c.flavor||'';
       var lg=document.createElement('p'); lg.className='lg'; lg.textContent=c.logic||puzzle.clueText[i];
       d.appendChild(fl); d.appendChild(lg); box.appendChild(d); });
   }
-  function updateArrest(){ document.getElementById('btnArrest').disabled = finished || !anchorComplete(); }
+  function updateArrest(){ computeConflicts();
+    document.getElementById('btnArrest').disabled = finished || !accComplete() || accConflicts.clues.length>0; }
 
   /* ---------- notebook (full grid) ---------- */
   function pairList(){ var ps=[]; for(var a=0;a<cats.length;a++) for(var b=a+1;b<cats.length;b++) ps.push([a,b]);
@@ -518,8 +515,7 @@
     for(var k=0;k<cells.length;k++){ (function(el){ el.onclick=function(){ if(finished) return; startTimer();
       var a=+el.dataset.a,b=+el.dataset.b,i=+el.dataset.i,j=+el.dataset.j,cur=E.gl(G,a,b,i,j),nx=cur===0?1:(cur===1?-1:0);
       if(nx===1) setYesExcl(a,b,i,j); else E.sl(G,a,b,i,j,nx);
-      saveProgress(); renderCard(); renderRail(); updateArrest();
-      el.outerHTML=el.outerHTML; // refresh handled below
+      saveProgress();
       renderNotebookInline(); }; })(cells[k]); }
   }
   function renderNotebookInline(){ // re-render cells in open modal without losing scroll
@@ -532,13 +528,19 @@
 
   /* ---------- actions ---------- */
   function giveHint(){ if(finished) return; startTimer();
-    var N=cats[0].values.length,opts=[];
-    for(var s=0;s<N;s++) for(var c=1;c<cats.length;c++){ var v=puzzle.solution[s][c]; if(E.gl(G,0,c,s,v)!==1) opts.push([c,s,v]); }
-    if(!opts.length){ toast('Nothing left to reveal — make the arrest!'); return; }
-    var p=opts[Math.floor(Math.random()*opts.length)]; setYesExcl(0,p[0],p[1],p[2]); hintsUsed++;
-    activeS=p[1]; setTab('solve'); afterChange(); renderRail(); toast('Hint revealed ('+hintsUsed+' used)'); }
-  function makeArrest(){ if(finished||!anchorComplete()) return;
-    if(isCorrect()) endGame(true); else toast('The evidence doesn’t hold together — re-check the clues.'); }
+    var cp=puzzle.culprit, opts=[];
+    if(acc[0]!==cp) opts.push([0,cp]);
+    for(var c=1;c<cats.length;c++){ var v=puzzle.solution[cp][c]; if(acc[c]!==v) opts.push([c,v]); }
+    if(!opts.length){ toast('Your accusation is complete — make the arrest!'); return; }
+    var p=opts[Math.floor(Math.random()*opts.length)]; acc[p[0]]=p[1]; hintsUsed++;
+    setTab('solve'); afterAcc();
+    toast('Hint: the culprit’s '+['who','where','how','why'][p[0]]+' revealed ('+hintsUsed+' used)'); }
+  function makeArrest(){ if(finished||!accComplete()) return;
+    computeConflicts();
+    if(accConflicts.clues.length){ toast('Your case contradicts the evidence — clear the red leads first.'); return; }
+    if(E.accusationCorrect(puzzle.solution, puzzle.culprit, acc)) endGame(true);
+    else { var unseen=sources().some(function(s){ return !searched[s.key]; });
+      toast(unseen ? 'Not enough to convict — some leads are still uninvestigated.' : 'The evidence doesn’t add up — re-check your reasoning.'); } }
   function endGame(success){
     finished=true; won=success;
     if(success) rating=E.investigationRating(wastedSearches());
@@ -546,12 +548,13 @@
     document.getElementById('pillStreak').textContent='🔥 '+liveStreak();
     if(!success) revealOnBoard();
     renderInvestigation(); renderCaseFile(); renderTabs();
-    renderCard(); renderRail(); updateArrest();
+    renderAccusation(); updateArrest();
     showResult();
   }
   function revealOnBoard(){ var N=cats[0].values.length; G=E.emptyGrid(cats);
     for(var s=0;s<N;s++) for(var c1=0;c1<cats.length;c1++) for(var c2=c1+1;c2<cats.length;c2++)
-      E.sl(G,c1,c2,puzzle.solution[s][c1],puzzle.solution[s][c2],1); }
+      E.sl(G,c1,c2,puzzle.solution[s][c1],puzzle.solution[s][c2],1);
+    var cp=puzzle.culprit; acc={0:cp}; for(var c=1;c<cats.length;c++) acc[c]=puzzle.solution[cp][c]; }
   function reportHTML(){ var out='<ul style="margin:6px 0 0;padding-left:18px">';
     for(var s=0;s<cats[0].values.length;s++){ var parts=[];
       for(var c=1;c<cats.length;c++) parts.push(cats[c].values[puzzle.solution[s][c]]);
@@ -666,13 +669,13 @@
     puzzle=E.generate(theme, currentSeed(), { target: currentTarget() });
     if(!puzzle){ toast('Could not generate this case.'); return; }
     G=E.emptyGrid(cats); elapsedMs=0; hintsUsed=0; finished=false; won=false; activeS=0;
-    searched={}; searchesUsed=0; rating=0; solveSeen=0; newlyUnlocked=[];
+    searched={}; searchesUsed=0; rating=0; solveSeen=0; newlyUnlocked=[]; acc={};
     if(timerStart||timerTick) stopTimer(); timerStart=null;
     loadProgress(); if(!G) G=E.emptyGrid(cats);
     // Migrate a win saved before ratings existed: recompute from its searches.
     if(finished && won && !rating) rating=E.investigationRating(wastedSearches());
     if(finished && !won) revealOnBoard();
-    renderMeta(); renderInvestigation(); renderCaseFile(); renderRail(); renderCard(); updateArrest();
+    renderMeta(); renderInvestigation(); renderCaseFile(); renderAccusation(); updateArrest();
     setTab((finished || discoveredCount()>0) ? 'solve' : 'investigate');
     if(finished) showResult();
     // Hash-gated test hook (#test). Exposes only data already derivable client-side.
@@ -683,7 +686,11 @@
       rating:function(){return rating;}, sources:function(){return sources().map(function(s){return s.key;});},
       search:function(k){ doSearch(k); },
       stats:function(){return getStats();}, history:function(){return getHistory();}, achievements:function(){return getAch();},
-      newBadges:function(){return newlyUnlocked.length;} };
+      newBadges:function(){return newlyUnlocked.length;},
+      culprit:function(){return puzzle.culprit;}, clues:function(){return puzzle.clues;},
+      accuse:function(c,v){ setAccuse(c,v); }, getAcc:function(){ return acc; },
+      conflicts:function(){ computeConflicts(); return accConflicts.clues.length; },
+      arrestReady:function(){ return !document.getElementById('btnArrest').disabled; } };
   }
   function newRandom(){ mode='random'; randomSeed=(Math.floor(Math.random()*0xffffffff))>>>0; loadPuzzle(); }
 

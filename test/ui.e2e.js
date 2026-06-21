@@ -46,22 +46,11 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   await page.click('#tabBtnSolve');
   ok(await page.getAttribute('#tabSolve', 'hidden') === null, 'Solve tab reveals the deduction board');
 
-  // 2) tap-to-select auto-eliminates the rest of that group (suspect 0, Where)
-  await page.click('#rail .face:nth-child(1)');
-  await page.click(chip(1, 0)); // suspect0 Where value0
-  ok(/\bon\b/.test(await cls(page, chip(1, 0))), 'tapped chip becomes selected (✓)');
-  ok(/\boff\b/.test(await cls(page, chip(1, 1))), 'other chips in the group auto-rule-out (✗)');
+  // 2) Solve tab is an ACCUSATION board (who/where/how/why), not a fill-everyone grid
+  ok((await page.$$('#accuse .aseg')).length === 4, 'accusation board has four rows (who/where/how/why)');
+  ok(await page.getAttribute('#btnArrest', 'disabled') !== null, 'arrest stays disabled with an empty accusation');
 
-  // 3) cross-suspect column elimination: value0 of Where is ruled out for suspect 1
-  await page.click('#rail .face:nth-child(2)');
-  ok(/\boff\b/.test(await cls(page, chip(1, 0))), 'same value is ruled out for another suspect');
-
-  // 4) right-click / long-press rules out a neutral chip manually
-  await page.click('#rail .face:nth-child(2)');
-  await page.click(chip(2, 0), { button: 'right' }); // How value0 -> rule out
-  ok(/\boff\b/.test(await cls(page, chip(2, 0))), 'right-click/long-press rules out a chip');
-
-  // 4b) INVESTIGATION — clues are DISCOVERED, not pre-listed
+  // 3) INVESTIGATION — clues are DISCOVERED, not pre-listed
   const totalClues = await page.evaluate(() => window.__dd.total());
   ok(await page.evaluate(() => window.__dd.found()) === 0, 'case file starts empty (no clues pre-listed)');
   const srcKeys = await page.evaluate(() => window.__dd.sources());
@@ -75,19 +64,34 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   ok((await page.$$('#invGroups .src.done')).length === 8, 'searched sources mark as done');
   ok((await page.textContent('#badgeSolve')) === String(totalClues), 'Solve tab badge reflects discovered clue count');
 
-  // 5) full solve -> arrest enables -> win modal -> streak increments
-  const sol = await page.evaluate(() => window.__dd.sol());
-  for (let s = 0; s < sol.length; s++) {
-    await page.click(`#rail .face:nth-child(${s + 1})`);
-    for (let c = 1; c < sol[s].length; c++) {
-      const sel = chip(c, sol[s][c]); // idempotent: clicking an already-✓ chip would toggle it back off
-      if (!/\bon\b/.test(await cls(page, sel))) await page.click(sel);
+  // 4) CONFLICTS — an accusation that contradicts a found clue lights up red and blocks the arrest
+  const violator = await page.evaluate(() => {
+    const c = window.__dd.clues()[0], N = 4, bump = x => (x + 1) % N;
+    if (c.kind === 'pos') {
+      if (c.e1[0] === 0) return [[0, c.e1[1]], [c.e2[0], bump(c.e2[1])]];
+      if (c.e2[0] === 0) return [[0, c.e2[1]], [c.e1[0], bump(c.e1[1])]];
+      return [[c.e1[0], c.e1[1]], [c.e2[0], bump(c.e2[1])]];
     }
-  }
-  ok(await page.getAttribute('#btnArrest', 'disabled') === null, 'arrest enables once every suspect is assigned');
+    if (c.kind === 'neg') return [[c.e1[0], c.e1[1]], [c.e2[0], c.e2[1]]];
+    const s = c.a[1], cat = c.opts[0][0], v1 = c.opts[0][1], v2 = c.opts[1][1]; let w = 0; while (w === v1 || w === v2) w++;
+    return [[0, s], [cat, w]];
+  });
+  await page.evaluate((picks) => picks.forEach(p => window.__dd.accuse(p[0], p[1])), violator);
+  ok(await page.evaluate(() => window.__dd.conflicts()) > 0, 'an accusation that contradicts a clue registers a conflict');
+  ok((await page.$$('#accuse .achip.bad')).length >= 1, 'the conflicting pick turns red');
+  ok((await page.$$('#clues .clue.bad')).length >= 1, 'the contradicted clue turns red in the Case File');
+  ok(await page.getAttribute('#conflictMsg', 'hidden') === null, 'a conflict banner is shown');
+  ok(await page.evaluate(() => window.__dd.arrestReady()) === false, 'arrest is blocked while the accusation conflicts');
+
+  // 5) the correct accusation clears conflicts, unlocks the arrest, and wins
+  await page.evaluate(() => { const a = window.__dd.getAcc(); [0, 1, 2, 3].forEach(c => { if (a[c] != null) window.__dd.accuse(c, a[c]); }); }); // clear
+  await page.evaluate(() => { const cp = window.__dd.culprit(), sol = window.__dd.sol()[cp];
+    window.__dd.accuse(0, cp); window.__dd.accuse(1, sol[1]); window.__dd.accuse(2, sol[2]); window.__dd.accuse(3, sol[3]); });
+  ok(await page.evaluate(() => window.__dd.conflicts()) === 0, 'the correct accusation has no conflicts');
+  ok(await page.getAttribute('#btnArrest', 'disabled') === null, 'arrest unlocks for a complete, conflict-free accusation');
   await page.click('#btnArrest');
   await page.waitForTimeout(300);
-  ok(/Case closed/.test(await page.textContent('#modalBody')), 'correct solution wins the case');
+  ok(/Case closed/.test(await page.textContent('#modalBody')), 'the correct accusation wins the case');
   ok(await page.evaluate(() => window.__dd.won()) === true, 'engine marks the case won');
   ok(/🔥 [1-9]/.test(await page.textContent('#pillStreak')), 'streak increments on a win');
   ok([1, 2, 3].includes(await page.evaluate(() => window.__dd.rating())), 'a 1–3 star detective rating is recorded on the win');
@@ -144,6 +148,21 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   await page.reload({ waitUntil: 'networkidle' });
   ok([1, 2, 3].includes(await page.evaluate(() => window.__dd.rating())), 'a pre-rating saved win migrates to a valid rating');
   ok(/★/.test(await page.textContent('#modalBody')), 'migrated win still shows stars (no 0-star result)');
+
+  // 10) (regression) discovering a contradicting clue refreshes the Solve UI and re-locks the arrest
+  await page.click('#modalClose').catch(() => {});
+  await page.click('#btnMenu'); await page.waitForTimeout(80); await page.click('#mRnd'); await page.waitForTimeout(160);
+  await page.evaluate(() => {
+    const c = window.__dd.clues()[0], N = 4, bump = x => (x + 1) % N; let picks;
+    if (c.kind === 'pos') picks = c.e1[0] === 0 ? [[0, c.e1[1]], [c.e2[0], bump(c.e2[1])]] : c.e2[0] === 0 ? [[0, c.e2[1]], [c.e1[0], bump(c.e1[1])]] : [[c.e1[0], c.e1[1]], [c.e2[0], bump(c.e2[1])]];
+    else if (c.kind === 'neg') picks = [[c.e1[0], c.e1[1]], [c.e2[0], c.e2[1]]];
+    else { const s = c.a[1], cat = c.opts[0][0], v1 = c.opts[0][1], v2 = c.opts[1][1]; let w = 0; while (w === v1 || w === v2) w++; picks = [[0, s], [cat, w]]; }
+    picks.forEach(p => window.__dd.accuse(p[0], p[1]));
+    const a = window.__dd.getAcc(); [0, 1, 2, 3].forEach(c2 => { if (a[c2] == null) window.__dd.accuse(c2, 0); }); // complete it
+  });
+  ok(await page.evaluate(() => window.__dd.arrestReady()) === true, 'a complete accusation can arrest before the contradicting clue is found');
+  await page.evaluate(() => window.__dd.sources().forEach(k => window.__dd.search(k)));
+  ok(await page.evaluate(() => window.__dd.arrestReady()) === false, 'searching in a contradicting clue refreshes the Solve UI and re-locks arrest');
 
   ok(errors.length === 0, 'no uncaught page errors (' + (errors[0] || 'none') + ')');
 
