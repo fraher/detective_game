@@ -62,12 +62,13 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   ok(await page.evaluate(() => window.__dd.found()) === totalClues, 'searching every source reveals every clue (always reachable)');
   ok((await page.$$('#clues .nbitem:not(.herring)')).length === totalClues, 'each discovered clue renders in the Case File');
   ok((await page.$$('#clues .nbgroup')).length === 8, 'the notebook groups clues under each source searched');
-  ok((await page.$$('#clues .nbitem.herring')).length >= 1, 'red-herring atmosphere appears in the notebook');
-  // narration: the evidence text reads as prose, not the bald logic line
+  // each clue is pure evidence prose — non-empty, and NO logic line underneath
   ok(await page.evaluate(() => {
     const items = [...document.querySelectorAll('#clues .nbitem:not(.herring)')];
-    return items.some(it => { const ev = it.querySelector('.ev').textContent, lg = it.querySelector('.lg').textContent; return ev && lg && ev !== lg; });
-  }), 'clues are narrated as evidence prose, distinct from the logic line');
+    return items.length > 0
+      && items.every(it => { const ev = it.querySelector('.ev'); return ev && ev.textContent.trim().length > 0; })
+      && items.every(it => !it.querySelector('.lg'));
+  }), 'clues render as evidence prose with no logic line underneath');
   ok((await page.$$('#invGroups .src.done')).length === 8, 'searched sources mark as done');
   ok((await page.textContent('#badgeSolve')) === String(totalClues), 'Solve tab badge reflects discovered clue count');
 
@@ -120,11 +121,6 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   await page.reload({ waitUntil: 'networkidle' });
   ok(await page.evaluate(() => window.__dd.fin()) === true, 'finished state persists across reload');
 
-  // 7) Notebook reflects edits (open, click a cell, it marks)
-  await page.click('#modalClose').catch(() => {});
-  await page.click('#btnNotebook');
-  await page.waitForTimeout(150);
-  ok((await page.$$('#modalBody .cell')).length === 96, 'Notebook renders the full 96-cell grid');
   await page.click('#modalClose').catch(() => {});
 
   // 8) give-up on a fresh random case reveals the solution

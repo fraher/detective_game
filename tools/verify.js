@@ -55,6 +55,35 @@ THEMES.forEach(function (theme) {
   }
 });
 
+// prose integrity: every template must name its entities, so a displayed clue is
+// never ambiguous about which fact it conveys (the logic line is no longer shown).
+var proseChecked = 0;
+THEMES.forEach(function (theme) {
+  var bank = PROSE[theme.id]; if (!bank) return;
+  function checkPool(kind, pool, slots) {
+    Object.keys(pool || {}).forEach(function (key) {
+      (pool[key] || []).forEach(function (t) {
+        proseChecked++;
+        slots.forEach(function (sl) { if (t.indexOf(sl) < 0) fails.push('prose ' + theme.id + ' ' + kind + ' ' + key + ' missing ' + sl + ': "' + t + '"'); });
+      });
+    });
+  }
+  checkPool('pos', bank.pos, ['{a}', '{b}']);
+  checkPool('neg', bank.neg, ['{a}', '{b}']);
+  checkPool('either', bank.either, ['{who}', '{x}', '{y}']);
+  // either clues must convey exactly-one in prose alone (the logic line is hidden):
+  // a clear alternation marker AND no hedge that implies both/neither/inconclusive.
+  Object.keys(bank.either || {}).forEach(function (key) {
+    (bank.either[key] || []).forEach(function (t) {
+      proseChecked++;
+      var hasAlt = /\beither\b|one or the other|one place or the other|one of the two|one of them|not both/i.test(t);
+      var undercut = /\bneither\b|somewhere between|no clear line|no proof|inconclusive|both seemed|maybe both/i.test(t);
+      if (!hasAlt || undercut)
+        fails.push('prose ' + theme.id + ' either ' + key + ' must assert exactly-one: "' + t + '"');
+    });
+  });
+});
+
 function pct(n, dd) { return dd ? (Math.round(1000 * n / dd) / 10) : 0; }
 console.log('\n============  CASE COMPLETENESS CERTIFICATE  ============');
 console.log('Audited ' + tally.n + ' cases (' + DAYS + ' daily + ' + (THEMES.length * RND_PER_THEME) + ' random)\n');
@@ -64,6 +93,7 @@ console.log('  Enough clues (no guessing)      ' + pct(tally.sufficient, tally.n
 console.log('  No redundant clues (minimal)    ' + pct(tally.minimal, tally.n) + '%');
 console.log('  Fully certified (ok)            ' + pct(tally.ok, tally.n) + '%\n');
 console.log('  Evidence-prose coverage         ' + pct(bespoke, totalClues) + '%  (' + bespoke + '/' + totalClues + ' clues bespoke; rest use templated flavor)');
+console.log('  Prose names its entities        ' + (fails.some(function (f) { return f.indexOf('prose ') === 0; }) ? 'FAIL' : 'OK') + '  (' + proseChecked + ' templates checked)');
 if (fails.length) {
   console.log('\nFAILURES (' + fails.length + '):');
   fails.slice(0, 20).forEach(function (f) { console.log('  ✗ ' + f); });

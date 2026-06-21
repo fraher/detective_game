@@ -334,10 +334,13 @@
   function generate(theme, seed, opts) {
     opts = opts || {};
     var rng = makeRng(seed >>> 0), cats = theme.categories, fallback = null;
-    for (var attempt = 0; attempt < 60; attempt++) {
+    for (var attempt = 0; attempt < 80; attempt++) {
       var perm = randomSolution(cats, rng);
       var clues = carveLogicalSet(cats, perm, rng);
       if (!clues) continue;
+      // opts.cardSolvable: only serve cases solvable straight from the clues (no
+      // cross-grid needed) — the game has no logic-grid notebook anymore.
+      if (opts.cardSolvable && !cardSolvable(cats, clues)) continue;
       var puzzle = assemble(theme, cats, perm, clues, rng);
       if (!opts.target || puzzle.difficulty === opts.target) return puzzle;
       if (!fallback) fallback = puzzle;
@@ -397,9 +400,10 @@
     var es = [cl.e1, cl.e2], i;
     for (i = 0; i < 2; i++) if (es[i][0] === 1) return { type: 'location', cat: 1, val: es[i][1] };
     for (i = 0; i < 2; i++) if (es[i][0] === 0) return { type: 'suspect', cat: 0, val: es[i][1] };
-    // method × motive names neither a place nor a person — pin it to a suspect
-    // deterministically so it still has somewhere to be discovered.
-    return { type: 'suspect', cat: 0, val: (cl.e1[1] + cl.e2[1]) % N };
+    // method × motive names neither a place nor a person — surface it as scene
+    // evidence at a location (deterministic) so QUESTIONING a suspect only ever
+    // reveals things about THAT suspect, never abstract facts about others.
+    return { type: 'location', cat: 1, val: (cl.e1[1] + cl.e2[1]) % N };
   }
   function attachInvestigation(theme, cats, clues, clueText) {
     var N = cats[0].values.length, sources = [], byKey = {}, i;

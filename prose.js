@@ -9,429 +9,429 @@
   "thames": {
     "pos": {
       "0_1": [
-        "{a}'s muddied boots left fresh prints on the wet cobbles outside {b}.",
-        "A cabman swears he set {a} down at {b} just as the fog thickened.",
-        "{a}'s calling card lay pressed into the trampled mud a step beyond {b}.",
-        "The gas-lamp outside {b} caught {a}'s face plainly near the midnight hour."
+        "A cabman recalled setting down {a} at {b} shortly before the fog thickened.",
+        "{a}'s name appeared in the visitors' register at {b} the very evening in question.",
+        "A constable on patrol noted {a} lingering near {b} well past the curfew hour.",
+        "Mud on {a}'s boots matched the particular clay found only around {b}."
       ],
       "0_2": [
-        "{a}'s gloves bore the very residue that {b} always leaves behind.",
-        "The whole trick of {b} matched {a}'s known habits to the letter.",
-        "Witnesses describe {a} carrying out {b} with the ease of long practice.",
-        "Tools fit only for {b} were discovered hidden among {a}'s private effects."
+        "Fibre caught on {a}'s cuff matched the wrapping paper found in connection with {b}.",
+        "{a} had acquired, only days prior, the materials precisely suited to {b}.",
+        "A witness claimed to have observed {a} rehearsing the movements required for {b}.",
+        "An accomplice later confirmed that {a} had made careful preparations for {b}."
       ],
       "0_3": [
-        "{a}'s ledgers and unpaid letters all point squarely toward {b} alone.",
-        "Every line of {a}'s diary betrays a heart quietly consumed by {b}.",
-        "Old acquaintances confirm {a} had long been goaded and gnawed by {b}.",
-        "{a}'s desperate manner all that week fairly reeked of {b}."
+        "Letters recovered from {a}'s lodgings spoke plainly of {b} as the driving force.",
+        "Those who knew {a} well cited {b} as the thing gnawing at them that season.",
+        "{a}'s diary, seized in the subsequent search, returned again and again to the subject of {b}.",
+        "A solicitor's correspondence addressed to {a} made the severity of {b} quite apparent."
       ],
       "1_2": [
-        "The whole scene at {a} bore every telltale mark of {b}.",
-        "Fresh scuffs along the floor at {a} betray where {b} was worked.",
-        "Constables trace the working of {b} firmly to the ground at {a}.",
-        "Whatever passed at {a} that night reeked unmistakably of {b}."
+        "Scuff marks at the threshold of {a} were consistent with {b} having taken place in haste.",
+        "A porter stationed at {a} described witnessing something that could only have been {b}.",
+        "Traces of the implement used in {b} were recovered from the floor of {a}.",
+        "The arrangement of the furniture at {a} had evidently been contrived to facilitate {b}."
       ],
       "1_3": [
-        "The crooked dealings at {a} all circle quietly back to {b}.",
-        "Papers seized at {a} lay bare a clear and ugly case of {b}.",
-        "Loose talk in the alleys ties {a} squarely to {b}.",
-        "Whatever festered at {a} could only have sprung from {b}."
+        "Documents found at {a} pointed unmistakably to {b} as the underlying cause of the affair.",
+        "Several witnesses at {a} confirmed that tensions rooted in {b} had long been simmering.",
+        "The ledgers maintained at {a} provided the clearest evidence yet of {b} at work.",
+        "An anonymous note retrieved from {a} named {b} as the very heart of the matter."
       ],
       "2_3": [
-        "The cold precision of {a} speaks plainly of {b} and nothing else.",
-        "The whole arrangement of {a} pointed to one end alone: {b}.",
-        "Each careful step of {a} was bent steadily toward {b}.",
-        "Behind the working of {a} lay nothing nobler than {b}."
+        "The elaborate preparation behind {a} betrayed a desperation born of {b}.",
+        "Only {b} could have driven a person to the considerable lengths required for {a}.",
+        "{a} was too painstaking to be impulsive — {b} had clearly been festering for some time.",
+        "Investigators agreed that {a} bore every hallmark of someone pushed past endurance by {b}."
       ]
     },
     "neg": {
       "0_1": [
-        "No trace of {a} was found anywhere near {b} the whole night through.",
-        "{a} dined clear across town, far from {b}, while the deed was done.",
-        "Three sober witnesses place {a} elsewhere, never once at {b}.",
-        "The register at {b} bears no sign that {a} ever set foot inside."
+        "{a} was miles from {b} that evening — no record places them anywhere near it.",
+        "Every reliable account has {a} away from {b} for the entire duration in question.",
+        "The night's log places {a} at a different address entirely; {b} was not on their route.",
+        "Not one witness or document links {a} to {b} on the evening in question."
       ],
       "0_2": [
-        "{a} plainly hadn't the skill that {b} so clearly demands.",
-        "Nothing in {a}'s possession could ever have served the work of {b}.",
-        "{a} was found empty-handed, ruling out any hand in {b}.",
-        "The peculiar marks of {b} match nothing whatever about {a}."
+        "No evidence of {b} was found among {a}'s effects or at their lodgings.",
+        "Nothing in {a}'s history or possessions suggested any acquaintance with {b}.",
+        "{a}'s known associates included no one with any understanding of {b}.",
+        "Not a shred of evidence connected {a} to {b} when the premises were searched."
       ],
       "0_3": [
-        "{a} stood to gain nothing at all from {b}, the books confirm.",
-        "Not a shred of {b} colours {a}'s letters or his accounts.",
-        "{a}'s easy and settled circumstances rule {b} out of it entirely.",
-        "All those nearest to {a} flatly dismiss any whisper of {b}."
+        "{a} had no known connection to {b} — the notion collapsed at the first examination.",
+        "Those closest to {a} confirmed that {b} had played no part in their affairs.",
+        "No document or witness linked {a} to any grievance rooted in {b}.",
+        "Enquiries into {a}'s circumstances revealed no evidence of {b} whatsoever."
       ],
       "1_2": [
-        "The scene at {a} shows not the faintest sign of {b}.",
-        "Nothing about {a} could ever have allowed {b} to occur.",
-        "Inspectors comb every inch of {a} and rule {b} out cold.",
-        "{b} leaves clear marks found nowhere at all about {a}."
+        "Staff present at {a} throughout the evening reported nothing resembling {b}.",
+        "A thorough search of {a} uncovered no sign that {b} had taken place there.",
+        "Physical examination of {a} yielded no evidence that {b} had occurred on its premises.",
+        "No witness account or physical trace connected {b} to the premises at {a}."
       ],
       "1_3": [
-        "Nothing about {a} so much as hints at {b}.",
-        "Papers drawn from {a} put {b} firmly out of the question.",
-        "The doings at {a} bear no stamp of {b} whatsoever.",
-        "Careful inquiry at {a} clears {b} clean from the reckoning."
+        "Nothing at {a} — ledger, letter, or sworn testimony — hinted at {b} as a factor.",
+        "Thorough enquiries at {a} turned up no trace of {b} among those associated with it.",
+        "Those connected with {a} dismissed any suggestion that {b} had played a role there.",
+        "A review of {a}'s records revealed no connection whatsoever to {b}."
       ],
       "2_3": [
-        "The doing of {a} would have served {b} not at all.",
-        "The very shape of {a} rules {b} out as its spur.",
-        "No thread of {b} runs through the cold working of {a}.",
-        "Whatever it was that drove {a}, it was plainly not {b}."
+        "The manner of {a} was entirely inconsistent with someone acting out of {b}.",
+        "Investigators found no thread connecting {a} to any grievance rooted in {b}.",
+        "{a} motivated by {b} would have left altogether different traces — none were found.",
+        "Nothing about {a} suggested {b} had played any part in bringing it about."
       ]
     },
     "either": {
       "1": [
-        "{who} was glimpsed near {x} or {y} in the fog, the witness unsure which.",
-        "Mud on {who}'s boots came from {x} or {y}, the two too alike to separate.",
-        "{who}'s movements that night ran to {x} or {y}, though which still eludes us."
+        "{who} was placed at either {x} or {y} that night, though no witness could settle which.",
+        "Accounts conflicted: one party placed {who} near {x}, another near {y} — one or the other, though which eludes us.",
+        "The trail puts {who} at either {x} or {y} that night — one of the two, though the evidence won't yet choose."
       ],
       "2": [
-        "{who}'s handiwork suggests {x} or {y}, the evidence pointing stubbornly both ways.",
-        "The tools on {who} would serve either {x} or {y}, leaving us guessing.",
-        "{who} relied on {x} or {y} that foggy night, though which we cannot say."
+        "{who} was linked to either {x} or {y} as the means employed — no witness could determine which.",
+        "Whether {who} had recourse to {x} or {y} remains disputed, though one of the two is certain.",
+        "The evidence narrows {who}'s method to either {x} or {y}, and no further."
       ],
       "3": [
-        "{who} seemed spurred by {x} or {y}, the diaries arguing for both.",
-        "Letters in {who}'s hand point to {x} or {y}, never settling which.",
-        "{who} acted from {x} or {y}, the line between them too fine to draw."
+        "{who} was consumed by either {x} or {y} — close associates could not agree which drove them.",
+        "Those who knew {who} cited either {x} or {y} as the likely spur — opinions were sharply divided.",
+        "The motive driving {who} was either {x} or {y}; the record stops short of certainty."
       ]
     },
     "red": [
-      "A single kid glove, pearl-buttoned, lay abandoned on the embankment steps, its owner unknown.",
-      "The fog carried a faint reek of pipe tobacco that lingered long after its smoker had gone.",
-      "A hansom clattered past twice within the hour, its blinds drawn tight against the night.",
-      "Somewhere upriver a bell tolled the wrong hour, then fell silent for good.",
-      "A torn theatre ticket, half its date washed away, turned slowly in the gutter water.",
-      "The lamps along the quay guttered low, as they had every foggy night that week.",
-      "A barge horn sounded thrice in the murk, the river traffic running wholly blind.",
-      "Wet newsprint clung to the railings, its headline screaming some scandal already forgotten.",
-      "A stray cat watched from a coal-cellar grate, then slipped away into the dark.",
-      "Cold tea sat untouched in a cracked cup, a grey skin already formed across its surface."
+      "A yellow hansom was found abandoned on the embankment, its horse unhitched and gone.",
+      "The fog that week was the thickest the river quarter had seen in a decade.",
+      "A gas-lamp at the corner had been deliberately extinguished — the mantle had long since cooled.",
+      "Half a postage seal, unstamped, lay pressed into the mud of the side passage.",
+      "Someone had tampered with the lock on the outer gate, though nothing appeared to be missing.",
+      "A smell of pipe tobacco — not the common blend — lingered in the corridor well past midnight.",
+      "The tide that evening ran unusually high, leaving watermarks on the lower stone steps.",
+      "A length of waxed cord, freshly cut, was recovered from beneath the dock planking.",
+      "An envelope, sealed but unaddressed, lay beneath the blotter on the secretary's writing desk.",
+      "The constable's beat log showed a gap of eleven minutes — wholly unaccounted for."
     ]
   },
   "noir": {
     "pos": {
       "0_1": [
-        "A cab driver swore he dropped {a} off at {b} — twice that week, same time, same story.",
-        "The ledger at {b} had {a}'s name in it, signed in handwriting that didn't want to be read.",
-        "Somebody matching {a}'s description was leaning against the wall outside {b} when the rain started coming down hard.",
-        "A receipt from {b} turned up in {a}'s coat — the kind you keep when you want to remember something."
+        "A bartender at {b} placed {a} there the night in question, nursing something dark.",
+        "{a} left a matchbook with {b}'s address tucked in a jacket pocket.",
+        "A parking stub with {b}'s stamp was found among {a}'s belongings.",
+        "The night clerk at {b} recognized {a}'s photograph without hesitation."
       ],
       "0_2": [
-        "The whole {b} had {a}'s fingerprints on it — not literal ones, but the kind you can't wipe off.",
-        "Word on the street put {a} at the center of the {b}, right where the dirty money changed hands.",
-        "Every piece of the {b} traced back to {a} if you followed the thread far enough.",
-        "The {b} had {a}'s style on it — the timing, the angle, the way nobody who mattered was looking."
+        "{a}'s fingerprints turned up on the documents tied to the {b}.",
+        "A witness heard {a} mention {b} in a phone call two days before the body turned up.",
+        "Papers found in {a}'s desk laid out the mechanics of the {b} in neat columns.",
+        "{a} had run {b} before — the DA's office had a file an inch thick."
       ],
       "0_3": [
-        "{a} had been living for {b} long enough that it didn't read like motive anymore — it read like religion.",
-        "Scratch the surface on {a} and {b} was the first thing that bled through.",
-        "The whole case against {a} kept circling back to {b}, patient as a vulture on a telephone wire.",
-        "Anyone who knew {a} could have told you {b} was the engine running the whole operation."
+        "Letters in {a}'s apartment made it clear that {b} had become an obsession.",
+        "Three people confirmed {a} had spoken openly about {b} in the weeks before.",
+        "The look on {a}'s face when the subject of {b} came up told me everything.",
+        "{a}'s bank records and old correspondence both pointed squarely at {b}."
       ],
       "1_2": [
-        "The {b} was planned at {a} — grease marks on the back table told a story nobody wanted to hear.",
-        "At {a}, the groundwork for {b} had been laid long before anyone thought to look.",
-        "Every thread leading back to the {b} ran through {a}, one way or another.",
-        "The {b} didn't start on the street — it started at {a}, where men with soft hands make hard decisions."
+        "The paperwork for the {b} had been drawn up right there at {a}.",
+        "Everyone in the neighborhood knew {b} had been the game at {a} for years.",
+        "A ledger recovered from {a} itemized every step of the {b} in plain figures.",
+        "The walls at {a} had soaked up plenty, and the {b} was written all over them."
       ],
       "1_3": [
-        "At {a}, {b} was practically currency — you could feel it hanging in the smoke.",
-        "The smell of {b} was all over {a} — you didn't need a warrant to pick it up.",
-        "Every name that kept surfacing around {a} had the same thing underneath it: {b}.",
-        "Nobody came and went from {a} without some angle tied to {b}; it was practically written on the door."
+        "Every lead pointing toward {b} ran back through {a} like water through a drain.",
+        "The old-timers at {a} said {b} had been the real currency there for a decade.",
+        "A stack of receipts from {a} told a story about {b} that nobody wanted told.",
+        "Whatever {b} meant in this town, it started and ended at {a}."
       ],
       "2_3": [
-        "{b} was at the root of the {a} — it always is when the smell is this rotten.",
-        "The {a} was just a tool; {b} was the hand that picked it up and pointed it.",
-        "Peel back the {a} and {b} is what's left, staring up at you like a bad debt.",
-        "Whoever cooked up the {a} had {b} written all over them — legible as a signed confession."
+        "The coroner's notes connected the {a} directly to a case built around {b}.",
+        "Whoever set up the {a} had {b} stamped all over the motive.",
+        "The shape of the {a} was too deliberate — {b} was pulling the strings.",
+        "Old cases with {a} as the play almost always came back to {b} in the end."
       ]
     },
     "neg": {
       "0_1": [
-        "The doorman at {b} had never laid eyes on {a} — and that man forgot nothing and nobody.",
-        "No trace of {a} at {b} — no match, no receipt, not so much as a footprint in the wet.",
-        " Every face at {b} went blank when I showed them {a}'s photograph, and these were people who noticed things.",
-        "The whole crowd at {b} came up clean on {a}: wrong neighborhood, wrong night, wrong city."
+        "Three separate witnesses placed {a} across town the night {b} went dark.",
+        "{a}'s name never appeared on any register, receipt, or log connected to {b}.",
+        "Nobody at {b} could place {a} within five blocks of the place.",
+        "The cab company had {a} on a fare that night, miles from {b}."
       ],
       "0_2": [
-        "{a} didn't have the connections for {b} — that kind of play takes years and the right kind of friends.",
-        "The {b} was too elaborate for {a}; wrong temperament, wrong patience, wrong reach entirely.",
-        "Nothing in {a}'s history pointed toward {b} — the style was all wrong, and so was the nerve.",
-        "I put {a} next to the {b} and nothing fit — like a glove on the wrong hand."
+        "{a} had neither the contacts nor the nerve for {b} — every source agreed.",
+        "Nothing in {a}'s history or belongings connected {a} to the machinery of {b}.",
+        "The men who ran {b} in this city didn't know {a}'s name.",
+        "A thorough search of {a}'s office turned up nothing that smelled of {b}."
       ],
       "0_3": [
-        "{a} and {b} didn't belong in the same sentence — I'd checked the file three times and the math never worked.",
-        "{a} had plenty of angles, but {b} wasn't among them — not even a long way down the list.",
-        "Everyone who knew {a} laughed when I brought up {b} — the wrong kind of laugh, low and certain.",
-        "Nothing in {a}'s past pointed toward {b}; if anything, everything pointed the other way."
+        "{a} had no stake in {b} — the accountant and the attorney both confirmed it.",
+        "People who knew {a} well said {b} never came up, not once.",
+        "There was nothing in {a}'s past that gave {b} any kind of purchase.",
+        "{a} and {b} occupied different worlds — no overlap, no crossing."
       ],
       "1_2": [
-        "At {a}, nobody had heard a whisper of {b} — and whispers were the local currency.",
-        "The {b} couldn't have been run out of {a} — wrong people, wrong setup, wrong kind of dark.",
-        "I walked every inch of {a} and found nothing that smelled like {b} — not even a rumor.",
-        "The geography ruled out {a} for the {b} — even if you wanted to believe it, the distances didn't cooperate."
+        "The local precinct had no record of {b} ever being worked out of {a}.",
+        "Anyone who knew {a} said {b} wasn't the kind of play that went on there.",
+        "Every inquiry into {b} in the area led somewhere else — never to {a}.",
+        "The paperwork for {b} showed an address across town, nowhere near {a}."
       ],
       "1_3": [
-        "At {a}, {b} didn't register as a factor — everybody there was running on something coarser and more immediate.",
-        "No one at {a} had a stake in {b} — I'd turned over every rock to make sure.",
-        "The connection between {a} and {b} looked good on a blackboard and meant nothing on the street.",
-        "{b} and {a} existed in different worlds; whoever did this wasn't mixing them — too much to lose."
+        "The people at {a} had no use for {b} — their troubles ran in a different direction.",
+        "Nothing recovered from {a} showed any tie to the kind of {b} that mattered here.",
+        "{b} was a stranger at {a} — the regulars laughed when the question came up.",
+        "Whatever drove this case, {b} and {a} were on opposite sides of the map."
       ],
       "2_3": [
-        "{b} didn't explain the {a} — there wasn't enough in it to justify that kind of exposure.",
-        "The {a} and {b} didn't belong in the same file — the math just wasn't there, no matter how you ran it.",
-        "Nobody runs the {a} for {b} alone; whoever did this had something bigger in mind, something older.",
-        "I put {b} next to the {a} and the fit was wrong — like a key turned in the wrong lock."
+        "The angle behind the {a} had nothing to do with {b} — the timing was wrong.",
+        "Investigators found no sign that {b} was anywhere in the picture when the {a} went down.",
+        "Anyone who knew the business said {b} didn't explain a {a} — the logic didn't hold.",
+        "The {a} was clean of any {b} angle — whoever ran it had a different score to settle."
       ]
     },
     "either": {
       "1": [
-        "{who}'s movements that night put them somewhere between {x} and {y} — pick one, you'd probably be wrong.",
-        "Every witness tied {who} to either {x} or {y}; nobody could agree which, and none would sign anything.",
-        "The timeline had {who} at {x} or {y} — the gap between the two was just long enough to matter."
+        "{who} was placed at either {x} or {y} that night — the accounts couldn't be squared.",
+        "Every source agreed {who} had been somewhere that evening — either {x} or {y} — but not which.",
+        "Witnesses put {who} at {x} or {y} — one place or the other, never both, though which stuck."
       ],
       "2": [
-        "Whether {who} ran the {x} or the {y} depended on who you asked — both had the same rotten smell.",
-        "The evidence pointed at {who} for the {x} or the {y}, and neither answer ruled the other one out.",
-        "{who} had the means for {x} and the appetite for {y} — a coin toss at best, and neither side clean."
+        "{who} had a hand in something crooked — either {x} or {y} — but the particulars stayed murky.",
+        "{who} ran {x} or {y} — the DA's man and the feds split on which, but it was one of the two.",
+        "What {who} pulled was {x} or {y} — one or the other — with nothing to pin down which."
       ],
       "3": [
-        "{who} was chasing something that night — whether it was {x} or {y} was a question nobody could answer cleanly.",
-        "Between {x} and {y}, {who} had reasons for both; the honest answer was probably somewhere in the ugly middle.",
-        "I couldn't pin {who} to {x} or to {y} — the file read like both at once, and that made it worse."
+        "{who} was hungry for something — either {x} or {y} — and couldn't hide it.",
+        "{who} acted from either {x} or {y} — those close split on which, but only one was the real spur.",
+        "The diary showed {who} chasing {x} or {y} — one or the other, with nothing to say which."
       ]
     },
     "red": [
-      "A pearl earring, single, found under the service entrance stairs — nobody claimed it and nobody asked.",
-      "Three calls placed to a disconnected number from the studio's outside line, all after midnight, none logged.",
-      "Someone had been sleeping in the prop warehouse; the folded blanket smelled of bay rum and cheap cigarettes.",
-      "A torn racing form from Santa Anita, two weeks old and still damp, wedged behind a steam radiator.",
-      "The barkeep mentioned a man in a Panama hat who drank alone all evening and left before the band quit.",
-      "A lipstick smear on the rim of a highball glass — the shade was something they hadn't sold since the war.",
-      "An unsealed envelope turned up in the back booth containing a photograph of a building I couldn't place.",
-      "The night watchman had been found asleep at his post twice that month, always the same night of the week.",
-      "Rain had washed the tire tracks clean from the alley — but not before somebody with good eyes got a look.",
-      "A half-smoked cigar in the hotel ashtray: the band said Havana, but the ash told a cheaper story."
+      "A half-smoked Chesterfield floated in the puddle outside the stage door.",
+      "Rain drummed the corrugated awning all night and nobody came out to look.",
+      "Someone had wiped the counter recently — the rag was still damp in the corner.",
+      "A telephone had been ripped from the wall, the cord kinked and frayed.",
+      "The smell of cheap gardenia perfume clung to the upholstery like a ghost.",
+      "A reel canister, lid ajar, sat on the floor with nothing inside it.",
+      "The window facing the alley had been cracked at the latch from outside.",
+      "Tuesday's edition lay folded on the bar stool, crossword half finished in pencil.",
+      "A set of car keys dangled from the register hook with no car to match them.",
+      "The clock on the wall had been stopped at eleven-twenty and left that way."
     ]
   },
   "orbit": {
     "pos": {
       "0_1": [
-        "{a}'s suit transponder pinged steadily from {b} throughout the eleven-minute blackout.",
-        "Thermal imaging fixes {a}'s heat signature inside {b} when the research core went dark.",
-        "{a} left fresh glove smudges on the handrails leading into {b}.",
-        "The hatch sensor logged {a}'s biometric badge entering {b} minutes before the wipe."
+        "{a}'s biometric badge logged an entry at {b} during the blackout window.",
+        "A partial thumbprint matching {a}'s profile was lifted from {b}'s primary console.",
+        "Corridor footage outside {b} captures {a} moving toward the hatch at the critical timestamp.",
+        "Air-recycler logs registered {a}'s CO₂ signature in {b} during third shift."
       ],
       "0_2": [
-        "{a}'s gloves carried the exact chemical residue left behind by {b}.",
-        "Console keystrokes matching {a}'s cadence executed {b} against the research core.",
-        "{a}'s personal toolkit shows wear consistent with performing {b}.",
-        "Recovered command fragments tie {a}'s authorization token directly to {b}."
+        "Residue consistent with {b} was recovered from the inner surface of {a}'s gloves.",
+        "{a}'s terminal session timestamp brackets the confirmed window of the {b}.",
+        "A tool kit linked to {b} was found secured in the locker assigned to {a}.",
+        "Trace analysis of surfaces {a} contacted returned markers consistent with {b}."
       ],
       "0_3": [
-        "{a}'s private logs circle obsessively around grievances pointing straight to {b}.",
-        "Encrypted messages recovered from {a}'s tablet lay bare a motive of {b}.",
-        "{a}'s conduct over the last rotation reads as textbook {b}.",
-        "Financial and personnel records frame {a}'s actions squarely as {b}."
+        "A partially restored message in {a}'s private buffer contained direct reference to {b}.",
+        "{a}'s off-station financial records showed transaction patterns consistent with {b}.",
+        "Station psych records flagged {a} as holding grievances aligned with {b}.",
+        "Recovered entries in {a}'s personal log described intentions consistent with {b}."
       ],
       "1_2": [
-        "Scorch patterns left by {b} scar the bulkheads of {a}.",
-        "The telemetry signature of {b} traces back to a terminal inside {a}.",
-        "Diagnostic logs place the origin of {b} firmly within {a}.",
-        "Particulate residue from {b} settled across the deck plating of {a}."
+        "Diagnostic output from {a} confirmed {b} was executed at that node.",
+        "Burn and compression signatures inside {a} matched the physical profile of {b}.",
+        "The incident trace for {b} was isolated to subsystems routed through {a}.",
+        "Circuit-interruption patterns recovered from {a} closely matched the known profile of {b}."
       ],
       "1_3": [
-        "Evidence of {b} surfaced among the debris swept from {a}.",
-        "The staging discovered in {a} reeks of {b}.",
-        "Handwritten notes hinting at {b} were wedged behind a panel in {a}.",
-        "The motive of {b} keeps surfacing in physical traces left throughout {a}."
+        "Deleted files recovered from {a}'s terminal held documentation relating to {b}.",
+        "An encrypted cache aboard {a} contained comm fragments referencing {b}.",
+        "Investigators identified {a} as the staging point for activities tied to {b}.",
+        "A concealed drive extracted from {a}'s equipment bay was indexed under {b}."
       ],
       "2_3": [
-        "The way {a} was carried out betrays a clear intent of {b}.",
-        "{a} bears every hallmark of {b}.",
-        "Forensic reconstruction links {a} directly to a motive of {b}.",
-        "The cold precision of {a} only makes sense as an act of {b}."
+        "The operational profile of {a} matched patterns attributed to actions taken for {b}.",
+        "Decoded transmissions confirmed {a} was deployed in direct service of {b}.",
+        "Forensic reconstruction of the sequence showed {a} was conducted to advance {b}.",
+        "Post-incident analysis concluded that {a} had been deliberately structured to serve {b}."
       ]
     },
     "neg": {
       "0_1": [
-        "{a}'s transponder never once registered inside {b} during the blackout.",
-        "No trace of {a} appears on any sensor covering {b}.",
-        "{a} was logged elsewhere, ruling out any presence in {b}.",
-        "Airlock cycle counts confirm {a} could not have reached {b} in time."
+        "{a}'s access log returned no badge reads at {b} during the relevant window.",
+        "The bio-monitor mesh covering {b} detected no implant signal from {a}.",
+        "{a}'s position during the blackout was recorded elsewhere; {b} shows no entry for them.",
+        "Passive motion arrays at {b} logged nothing during the window — no passage by {a}."
       ],
       "0_2": [
-        "{a}'s credentials were never used to initiate {b}.",
-        "Tool marks from {b} match nothing in {a}'s recovered kit.",
-        "{a} lacked the access clearance required to perform {b}.",
-        "Forensics cleanly exclude {a} from carrying out {b}."
+        "{a}'s workstation session logs produced no command strings associated with {b}.",
+        "No equipment linked to {b} was found in any locker or bay assigned to {a}.",
+        "{a}'s biometric data from the window showed no physical activity consistent with {b}.",
+        "Surface sampling of areas {a} accessed returned no trace signature for {b}."
       ],
       "0_3": [
-        "Nothing in {a}'s records supports a motive of {b}.",
-        "{a}'s circumstances rule out {b} as any reason to act.",
-        "Investigators found no thread tying {a} to {b}.",
-        "{a} stood to gain absolutely nothing from {b}."
+        "{a}'s psych evaluations and personnel file contained no indicators of {b}.",
+        "Station records show nothing in {a}'s history to suggest any stake in {b}.",
+        "Financial and comm logs for {a} returned no pattern consistent with {b}.",
+        "A full personnel review of {a}'s file found no documented link to {b}."
       ],
       "1_2": [
-        "No residue from {b} turned up anywhere inside {a}.",
-        "Diagnostics rule out {a} as the origin of {b}.",
-        "The terminals in {a} show no trace of {b}.",
-        "{b} left no mark whatsoever on the deck plating of {a}."
+        "System logs from {a} contained no anomaly patterns attributable to {b}.",
+        "Hardware diagnostics at {a} returned nominal — no signature of {b} was present.",
+        "Environmental sensors throughout {a} recorded no event consistent with {b}.",
+        "Node inspection at {a} found no physical evidence that {b} had occurred there."
       ],
       "1_3": [
-        "Nothing recovered from {a} points toward {b}.",
-        "The staging in {a} bears no signature of {b}.",
-        "Investigators cleared {a} of any link to {b}.",
-        "No trace of {b} surfaced in the full sweep of {a}."
+        "No material implicating {b} was found in any compartment of {a}.",
+        "A full sweep of {a} produced nothing connecting it to {b}.",
+        "Documentary evidence for {b} was absent from all storage systems within {a}.",
+        "Station records show {a} played no documented role in any activity linked to {b}."
       ],
       "2_3": [
-        "The execution of {a} shows none of the markers of {b}.",
-        "Reconstruction rules out {b} as the reason behind {a}.",
-        "{a} carries no signature consistent with {b}.",
-        "Nothing about {a} squares with a motive of {b}."
+        "Investigators found no operational link between {a} and any goal tied to {b}.",
+        "The forensic chain for {a} did not extend to any objective related to {b}.",
+        "No decoded message or recovered file tied {a} to any purpose driven by {b}.",
+        "Reconstruction of {a} found no connection to any plan structured around {b}."
       ]
     },
     "either": {
       "1": [
-        "{who}'s transponder flickered between {x} and {y}, leaving their true position unclear.",
-        "Sensor gaps place {who} in either {x} or {y}, but the logs can't separate them.",
-        "{who}'s drift narrows to {x} or {y}, with no telemetry to tell which."
+        "{who}'s movement record points to either {x} or {y} — one of the two, though which remains unresolved.",
+        "Conflicting sensor readings place {who} at either {x} or {y} during the blackout — one or the other, not both.",
+        "The partial corridor log narrows {who}'s position to either {x} or {y} — one of the two, no further."
       ],
       "2": [
-        "{who}'s console traces hint at either {x} or {y}, too corrupted to tell apart.",
-        "Residue on {who}'s gloves matches {x} or {y} equally, leaving the method open.",
-        "{who} clearly acted, yet the evidence wavers between {x} and {y}."
+        "Trace evidence on {who}'s suit points to either {x} or {y} — one of the two, the distinction unclear.",
+        "{who}'s session data carries markers that match {x} or {y}, but not both simultaneously.",
+        "Tool residue recovered from {who}'s station matches profiles for either {x} or {y}."
       ],
       "3": [
-        "{who}'s private logs point to {x} or {y}, the true motive still buried.",
-        "Investigators tie {who} to either {x} or {y}, unable to settle which drove them.",
-        "{who}'s grievances split evenly between {x} and {y}, motive uncertain."
+        "Decoded fragments from {who}'s private channel point to {x} or {y}, but not both.",
+        "{who}'s psych profile points to either {x} or {y} — one of the two, the source unresolved.",
+        "Recovered correspondence from {who} points to either {x} or {y} — one of the two, the intent unclear."
       ]
     },
     "red": [
-      "A coffee bulb floated near the galley vent, its contents long since frozen solid.",
-      "One emergency light strip flickered on a forty-second cycle, unrelated to any breach.",
-      "A maintenance drone sat idle mid-corridor, its cell drained hours before the blackout.",
-      "Condensation traced odd spirals across a viewport, only frost on cold transparisteel.",
-      "A loose ration wrapper drifted through three modules, carried solely by the ventilation.",
-      "The station chronometer had crept nine seconds fast, a fault flagged weeks earlier.",
-      "A cracked tablet lay under a bunk, its damage dated to the last resupply run.",
-      "Faint scoring marked an exterior hull plate, micrometeorite wear and nothing more.",
-      "A half-finished chess game stayed magnetized to the wardroom table, pieces undisturbed.",
-      "The water recycler hummed a half-tone flat, a worn bearing the crew had long ignored."
+      "A sealed coffee bulb, still warm, was found abandoned near the secondary junction panel.",
+      "The station's internal chronometer had been reset by exactly eleven minutes during third shift.",
+      "Gravity plating in the aft corridor logged three unexplained micro-fluctuations before the blackout.",
+      "One emergency EVA suit was found improperly racked, its helmet seal fractured from the inside.",
+      "The recycler manifest showed a 0.3-gram nitrogen discrepancy with no associated fault entry.",
+      "A single left-hand glove was found wedged beneath a floor panel near the main trunk junction.",
+      "Three corridor lights along the central spine had been switched from automatic to manual override.",
+      "Backup power cells in the maintenance locker showed recent cycling with no associated fault log.",
+      "A faint, hand-shaped burn mark was found on the outer hull access panel near bay seven.",
+      "Station comms logged a two-second carrier tone with no header or payload at 03:41 station time."
     ]
   },
   "manor": {
     "pos": {
       "0_1": [
-        "{a}'s muddy bootprints tracked a clear path across the floor of {b}.",
-        "A monogrammed handkerchief belonging to {a} lay forgotten on the table in {b}.",
-        "The maid swears she glimpsed {a} slipping through the door of {b} past midnight.",
-        "Candle-wax matching {a}'s own taper was found cooling on the sill of {b}."
+        "A housemaid distinctly recalled seeing {a} emerging from {b} just before the clock struck eleven.",
+        "{a}'s dropped glove was recovered from beneath the escritoire inside {b}.",
+        "Mud matching {b}'s flagstone was noted on {a}'s shoes when they retired that evening.",
+        "The butler confirmed {a} had requested a candle, then was seen entering {b} alone."
       ],
       "0_2": [
-        "Signs that {a} had resorted to {b} proved impossible to overlook.",
-        "Traces consistent with {b} clung to {a}'s gloves, plain as ink to the eye.",
-        "The deed bore every hallmark of {b}, and each hallmark led back to {a}.",
-        "{a}'s own effects betrayed a long, quiet familiarity with {b}."
+        "A servant recalled {a} asking peculiar questions about the means of {b} the previous evening.",
+        "{a}'s coat pocket contained a folded paper listing supplies associated with {b}.",
+        "Physical traces linked unmistakably to {b} were discovered among {a}'s personal effects at the manor.",
+        "The inspector confirmed that {a}'s recent movements pointed directly toward prior knowledge of {b}."
       ],
       "0_3": [
-        "A letter in {a}'s writing-case laid bare a motive of {b}.",
-        "{a}'s diary, half-burnt in the grate, spoke of nothing but {b}.",
-        "Those who knew {a} confessed the one driving passion was always {b}.",
-        "Among {a}'s papers lay proof enough that {b} had set the affair in motion."
+        "{a}'s letters, seized from the writing desk, revealed an abiding preoccupation with {b}.",
+        "Crossed words overheard at dinner suggested {a} harboured an intense desire concerning {b}.",
+        "A journal entry in {a}'s own hand confessed an obsession with securing {b}.",
+        "The solicitor confirmed that {b} gave {a} compelling reason to act against the late lord."
       ],
       "1_2": [
-        "Signs of {b} were unmistakable in {a}, from the disorder to the lingering smell.",
-        "Whatever {b} had occurred, it had plainly been carried out within {a}.",
-        "The very furnishings of {a} bore the marks of {b} freshly done.",
-        "Within {a} lay every trace one would expect where {b} had taken place."
+        "Physical evidence of {b} was concentrated entirely within the confines of {a}.",
+        "An expert examination of {a} revealed unmistakable signs that {b} had been carried out there.",
+        "Residue consistent with {b} was detected on the surfaces of {a} and nowhere else.",
+        "The inspector concluded {a} bore every hallmark of the site where {b} had taken place."
       ],
       "1_3": [
-        "The disorder in {a} spoke plainly of {b} as its hidden cause.",
-        "There hung about {a} the unmistakable atmosphere of a deed rooted in {b}.",
-        "Every clue gathered in {a} pointed back to a single motive: {b}.",
-        "Whatever passed in {a} had {b} written through it like a watermark."
+        "Documents relating directly to {b} were discovered concealed within the furnishings of {a}.",
+        "Heated arguments over {b} had been conducted within {a} during the week prior, the housekeeper confirmed.",
+        "Evidence bearing on {b} had been hastily secreted among the contents of {a}.",
+        "A letter found behind the wainscoting confirmed the connection between {b} and {a}."
       ],
       "2_3": [
-        "The {a} bore all the cold deliberation of an act committed for {b}.",
-        "Whoever resorted to {a} did so plainly in the service of {b}.",
-        "The manner of the {a} betrayed {b} as the hand behind it.",
-        "Such {a} is never idle; here it served one end alone — {b}."
+        "The perpetrator's choice of {a} was explained entirely by the exigencies of {b}.",
+        "Only {b} could have driven someone to the elaborate lengths demanded by {a}.",
+        "A sworn statement linked the resort to {a} directly to an overwhelming desire for {b}.",
+        "The inspector remarked that {a} was the natural instrument of one consumed by {b}."
       ]
     },
     "neg": {
       "0_1": [
-        "{a} could not have entered {b}; the door stood locked and the dust undisturbed.",
-        "Not a single footprint of {a}'s was found anywhere near {b}.",
-        "Witnesses place {a} elsewhere entirely, well away from {b}, all evening.",
-        "The thick dust on {b}'s threshold proved {a} had never once crossed it."
+        "{a} remained in the drawing room all evening, never once setting foot in {b}.",
+        "No article belonging to {a} was recovered from {b} despite a thorough search.",
+        "Three witnesses confirmed {a} had never approached {b} during the hours in question.",
+        "{a}'s name appeared nowhere in the accounts of those who had entered {b} that night."
       ],
       "0_2": [
-        "{a} hadn't the means nor the skill for {b}; the notion is plainly absurd.",
-        "Nothing among {a}'s effects so much as hinted at {b}.",
-        "{a}'s hands were clean of any trace that {b} would surely have left.",
-        "Whoever managed {b}, it was assuredly not {a} — the timing forbids it."
+        "Nothing in {a}'s possession or history showed any connection to {b}.",
+        "A search of {a}'s quarters produced nothing whatsoever associated with {b}.",
+        "Enquiries into {a}'s affairs turned up no knowledge of or aptitude for {b}.",
+        "The inspector found not a single strand of evidence linking {a} to {b}."
       ],
       "0_3": [
-        "{a} stood to gain nothing from {b}; the motive simply does not hold.",
-        "Not a line in {a}'s correspondence betrays the faintest stir of {b}.",
-        "Those nearest {a} dismiss any whisper of {b} out of hand.",
-        "Whatever drove {a}, it was never {b} — that much the papers make clear."
+        "{a} had no discernible interest in {b} and would have gained nothing from it.",
+        "Enquiries confirmed {a} was entirely uninvolved in the matter of {b}.",
+        "{a}'s correspondence showed no trace of concern with {b} of any kind.",
+        "The solicitor stated plainly that {a} held no stake whatsoever in {b}."
       ],
       "1_2": [
-        "Not the least sign of {b} could be found anywhere within {a}.",
-        "Nothing in {a} lay disturbed enough for {b} to have occurred there.",
-        "Whatever {b} took place that night, {a} bears no mark of it.",
-        "The pristine order of {a} rules out any {b} within its walls."
+        "{a} showed no physical signs of {b} having taken place there.",
+        "Expert examination established conclusively that {b} had not occurred anywhere within {a}.",
+        "Not a single mark consistent with {b} was found upon the surfaces of {a}.",
+        "The evidence of {b} was entirely absent from {a}, as the inspector subsequently confirmed."
       ],
       "1_3": [
-        "Nothing in {a} so much as suggests a deed rooted in {b}.",
-        "The clues gathered in {a} bear no relation whatever to {b}.",
-        "Whatever motive haunts {a}, it is certainly not {b}.",
-        "Not one thread found in {a} leads back, however faintly, to {b}."
+        "Nothing recovered from {a} bore any relation to the matter of {b}.",
+        "A thorough search of {a} produced no document or object connected to {b}.",
+        "The housekeeper confirmed that {b} had never been discussed or transacted within {a}.",
+        "Every article catalogued in {a} was accounted for and showed no link to {b}."
       ],
       "2_3": [
-        "The {a} cannot be laid at the door of {b}; the two simply do not meet.",
-        "Whatever prompted the {a}, it bore not the faintest trace of {b}.",
-        "No reading of the {a} supports {b} as its cause.",
-        "The {a} was plainly committed for some end other than {b}."
+        "No evidence established {b} as having any bearing on the use of {a}.",
+        "Enquiries into {b} as a driver of {a} produced nothing of any substance.",
+        "The inspector concluded that {b} played no discernible role in the resort to {a}.",
+        "Correspondence examined after the fact showed {b} to be entirely disconnected from {a}."
       ]
     },
     "either": {
       "1": [
-        "{who}'s trail vanishes between {x} and {y}; which one held them remains a mystery.",
-        "{who} was certainly in {x} or {y} that night, though no one can say which.",
-        "Mud on {who}'s shoes might have come from {x} or equally from {y}."
+        "Witnesses placed {who} near either {x} or {y} that night, their accounts irreconcilably at odds.",
+        "The single footprint matching {who}'s boot came from either {x} or {y} — one of the two, not both.",
+        "{who}'s movements that night led toward either {x} or {y}, though the trail went cold before confirming which."
       ],
       "2": [
-        "{who} resorted to either {x} or {y} — the evidence will not yet say which.",
-        "The marks left by {who} suit {x} as readily as {y}.",
-        "{who}'s deed was surely {x} or {y}, though which remains stubbornly unclear."
+        "{who}'s effects pointed to either {x} or {y} — one of the two — though which stayed unproven.",
+        "The constable noted that {who}'s known movements were consistent with {x} or with {y}, not both.",
+        "A witness described {who} engaged that evening in an act matching either {x} or {y}."
       ],
       "3": [
-        "{who} was driven by {x} or {y}; the letters leave the question quite open.",
-        "Whether {x} or {y} moved {who}, no one yet can rightly tell.",
-        "{who}'s motive was plainly {x} or {y} — the two so often wear one face."
+        "{who}'s private papers pointed to either {x} or {y} as the spur — one of the two, though which stayed unclear.",
+        "{who} was driven by {x} or {y} — acquaintances divided on which, but it was one of them.",
+        "The solicitor observed that {who} was driven by either {x} or {y} — one of the two, though not which."
       ]
     },
     "red": [
-      "A single black glove lay beneath the hall clock, its mate nowhere to be found.",
-      "The storm had felled the telephone line, and the drive lay buried under fallen elms.",
-      "A half-finished glass of sherry stood warming on the mantel, the fire long since dead.",
-      "Rain hammered the leaded windows all night, drowning every footstep and every stifled cry.",
-      "The great clock in the hall had stopped, its hands frozen at a quarter to one.",
-      "A faint scent of lavender lingered on the stair, though no lady owned to wearing it.",
-      "Muddy paw-prints crossed the terrace where the gardener's spaniel had wandered loose.",
-      "A torn page from an old hymnal lay pressed against a rain-streaked window pane.",
-      "A ring of keys hung on its accustomed hook, cold and untouched by any hand.",
-      "Somewhere a window banged through the small hours, its latch worn loose with age."
+      "A half-drunk glass of claret stood on the mantelpiece, the candle beside it burned to a stub.",
+      "Rain lashed the window panes throughout the night, making the gravel paths a muddy ruin.",
+      "The grandfather clock in the hall had been stopped, whether by accident or design none could say.",
+      "A single white glove lay crumpled behind the umbrella stand, its mate nowhere to be found.",
+      "The dogs in the kennel had barked at some point past midnight, though none could agree precisely when.",
+      "A faint scent of tobacco hung about the east corridor, where smoking was strictly forbidden.",
+      "Several pages had been torn from the visitors' book, leaving only ragged stubs in the binding.",
+      "The kitchen fire had been stoked unusually late, reducing an unknown quantity of paper to ash.",
+      "One of the portrait frames on the landing was crooked, its hanging wire freshly disturbed.",
+      "An inkwell on the writing desk had been overturned and wiped, leaving only a dark stain on the blotter."
     ]
   }
 };

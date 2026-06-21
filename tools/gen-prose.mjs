@@ -60,11 +60,11 @@ Key "a_b" relates the value of the lower category (slot {a}) to the higher (slot
   0_1 = suspect {a} was at location {b};   0_2 = suspect {a} carried out method {b};
   0_3 = suspect {a} driven by motive {b};  1_2 = method {b} happened at location {a};
   1_3 = motive {b} tied to location {a};   2_3 = method {a} done out of motive {b}.
-"neg" pools negate the same relation (alibi / exclusion — "no trace of...", "ruled out").
-"either" key = the opts' category; slots {who} (suspect), {x} and {y} (two values of that category): "{who} tied to either {x} or {y}, unclear which".
-"red" = 8-10 atmospheric red-herring notes that look like evidence but mean nothing (no slots, no names).
+"neg" pools clearly RULE OUT the specific {a}-{b} connection and MUST mention BOTH {a} and {b}. Phrase as a neutral observation/alibi fitting the relation: a place -> "{a} was elsewhere, never at {b}"; a method -> "nothing tied {a} to {b}" / "{a} showed no trace of {b}"; a motive -> "{a} had no stake in {b}". It must be unambiguous that {a} is NOT connected to {b}. Do NOT write a vague alibi that omits {b}; do NOT write "{a} could not have..."; never imply {a} did anything.
+"either" key = the opts' category; slots {who} (suspect), {x} and {y}: EXACTLY ONE of {x}/{y} is true — one or the other, NEVER both and NEVER neither; the reader just can't yet tell which. E.g. "{who} was tied to either {x} or {y}, though which is unclear". Do NOT say "both", "maybe both", or "neither".
+"red" = 8-10 atmospheric notes that look like evidence but name no entity and imply no fact (no slots, no names).
 
-Rules: pos/neg use ONLY {a},{b}; either uses ONLY {who},{x},{y}. Each pos/neg pool exactly 4 templates; each either pool 3; red 8-10. One sentence each, ~10-22 words, ending with a period. Stay in the theme's voice. Do not hard-code value names except in "red".`;
+Rules: EVERY pos/neg template MUST contain both {a} and {b}; EVERY either template MUST contain {who}, {x}, and {y}. Use no other slots. Each pos/neg pool exactly 4 templates; each either pool 3; red 8-10. One sentence each, ~10-22 words, ending with a period. Each line is a SELF-CONTAINED observation — never require the reader to already know another character's facts. Do NOT editorialize about whether a clue is useful, likely, or important. Stay in the theme's voice. Do not hard-code value names except in "red".`;
 }
 
 // One-shot through the Claude CLI in print mode (-p). Subscription auth; no API key.

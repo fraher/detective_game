@@ -99,6 +99,15 @@ THEMES.forEach(function (theme) {
     assert(E.accusationConflicts(p.cats, p.clues, [ci], acc).clues.indexOf(ci) >= 0, 'a pick contradicting a pos clue is flagged as a conflict');
   }
 })();
+// Served puzzles (cardSolvable option) are solvable straight from the clues — no
+// cross-grid notebook needed — and still fully certified unique/solvable.
+THEMES.forEach(function (theme) {
+  for (var seed = 0; seed < 40; seed++) {
+    var p = E.generate(theme, E.hashStr('served:' + theme.id + ':' + seed), { cardSolvable: true });
+    assert(p && E.cardSolvable(p.cats, p.clues), theme.id + ' ' + seed + ' served puzzle is card-solvable');
+    assert(p && E.verify(p).ok, theme.id + ' ' + seed + ' served puzzle certified');
+  }
+});
 // A partial accusation (attribute picked, Who not yet chosen) must not false-conflict.
 (function () {
   var p = E.generate(THEMES[1], 999), c = null, ci = -1, i;
