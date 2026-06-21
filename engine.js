@@ -423,6 +423,30 @@
     var minSearches = sources.filter(function (s) { return s.clueIdx.length > 0; }).length;
     return { sources: sources, minSearches: minSearches };
   }
+  /* ----- Deterministic completeness certificate ------------------------
+   * Run on ANY case to certify it is fair. Returns:
+   *   solvable   - at least one solution is consistent with the clues
+   *   unique     - EXACTLY one solution exists (no ambiguity)
+   *   sufficient - that solution is reachable by pure logic, no guessing
+   *                (the clues are enough to deduce it)
+   *   minimal    - no clue is redundant (every clue is needed)
+   *   ok         - solvable AND unique AND sufficient
+   * Deterministic: same (cats, clues) always yields the same certificate.   */
+  function verify(catsOrPuzzle, maybeClues) {
+    var cats = maybeClues ? catsOrPuzzle : catsOrPuzzle.cats;
+    var clues = maybeClues ? maybeClues : catsOrPuzzle.clues;
+    var count = countSolutions(cats, clues, emptyGrid(cats), 2); // capped at 2
+    var solvable = count >= 1, unique = count === 1, sufficient = propagationSolvable(cats, clues);
+    var minimal = true;
+    for (var k = 0; k < clues.length; k++) {
+      if (propagationSolvable(cats, clues.slice(0, k).concat(clues.slice(k + 1)))) { minimal = false; break; }
+    }
+    return {
+      ok: solvable && unique && sufficient, solvable: solvable, unique: unique,
+      sufficient: sufficient, minimal: minimal, solutionCount: count, clueCount: clues.length
+    };
+  }
+
   // Star rating for a solved case (1–3): each dead-end (a searched source that
   // held no clue) costs a star, floored at one.
   function investigationRating(wastedSearches) {
@@ -481,7 +505,7 @@
     propagate: propagate, countSolutions: countSolutions,
     propagationSolvable: propagationSolvable, cardSolvable: cardSolvable,
     generate: generate, renderClue: renderClue, rateDifficulty: rateDifficulty,
-    investigationRating: investigationRating,
+    investigationRating: investigationRating, verify: verify,
     accusationConflicts: accusationConflicts, accusationCorrect: accusationCorrect
   };
 

@@ -38,6 +38,8 @@ THEMES.forEach(function (theme) {
     assert(E.countSolutions(p.cats, p.clues, empty, 2) === 1, theme.id + ' seed ' + seed + ' unique solution');
     // 1b) solvable by pure logic, no guessing (fairness guarantee)
     assert(E.propagationSolvable(p.cats, p.clues), theme.id + ' seed ' + seed + ' solvable without guessing');
+    // 1c) the deterministic completeness certificate agrees (unique + solvable + sufficient)
+    assert(E.verify(p).ok, theme.id + ' seed ' + seed + ' verify().ok');
     // 2) clues consistent with solution
     assert(cluesConsistent(p), theme.id + ' seed ' + seed + ' clues consistent');
     // 3) minimal: removing any clue breaks logical solvability

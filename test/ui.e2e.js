@@ -60,7 +60,14 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   ok(await page.evaluate(() => window.__dd.searches()) === before + 1, 'searching a source consumes a search');
   await page.evaluate(() => window.__dd.sources().forEach(k => window.__dd.search(k)));
   ok(await page.evaluate(() => window.__dd.found()) === totalClues, 'searching every source reveals every clue (always reachable)');
-  ok((await page.$$('#clues .clue')).length === totalClues, 'each discovered clue renders in the Case File');
+  ok((await page.$$('#clues .nbitem:not(.herring)')).length === totalClues, 'each discovered clue renders in the Case File');
+  ok((await page.$$('#clues .nbgroup')).length === 8, 'the notebook groups clues under each source searched');
+  ok((await page.$$('#clues .nbitem.herring')).length >= 1, 'red-herring atmosphere appears in the notebook');
+  // narration: the evidence text reads as prose, not the bald logic line
+  ok(await page.evaluate(() => {
+    const items = [...document.querySelectorAll('#clues .nbitem:not(.herring)')];
+    return items.some(it => { const ev = it.querySelector('.ev').textContent, lg = it.querySelector('.lg').textContent; return ev && lg && ev !== lg; });
+  }), 'clues are narrated as evidence prose, distinct from the logic line');
   ok((await page.$$('#invGroups .src.done')).length === 8, 'searched sources mark as done');
   ok((await page.textContent('#badgeSolve')) === String(totalClues), 'Solve tab badge reflects discovered clue count');
 
@@ -79,7 +86,7 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   await page.evaluate((picks) => picks.forEach(p => window.__dd.accuse(p[0], p[1])), violator);
   ok(await page.evaluate(() => window.__dd.conflicts()) > 0, 'an accusation that contradicts a clue registers a conflict');
   ok((await page.$$('#accuse .achip.bad')).length >= 1, 'the conflicting pick turns red');
-  ok((await page.$$('#clues .clue.bad')).length >= 1, 'the contradicted clue turns red in the Case File');
+  ok((await page.$$('#clues .nbitem.bad')).length >= 1, 'the contradicted clue turns red in the notebook');
   ok(await page.getAttribute('#conflictMsg', 'hidden') === null, 'a conflict banner is shown');
   ok(await page.evaluate(() => window.__dd.arrestReady()) === false, 'arrest is blocked while the accusation conflicts');
 

@@ -6,7 +6,10 @@
     "test": "node test/engine.test.js",
     "playtest": "node test/playtest.js",
     "e2e": "node test/ui.e2e.js",
-    "verify": "node test/engine.test.js && node test/playtest.js"
+    "build": "node tools/build.mjs",
+    "verify:cases": "node tools/verify.js",
+    "gen:prose": "node tools/gen-prose.mjs",
+    "verify": "node test/engine.test.js && node test/playtest.js && node tools/verify.js"
   },
   "license": "MIT",
   "private": true,

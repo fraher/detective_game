@@ -151,6 +151,21 @@
   .clue .fl{color:#c9b88a;font-style:italic;font-size:12.5px;margin:0 0 3px}
   .clue .lg{color:#e7edf6;font-size:13.5px;font-weight:600;margin:0}
   .clue .lg::before{content:"\2192 ";color:var(--accent);font-weight:800}
+  /* notebook — case file grouped by where you found it */
+  .nbgroup{margin:12px 0 4px}
+  .nbgroup:first-child{margin-top:4px}
+  .nbhead{font-size:11.5px;font-weight:800;letter-spacing:.5px;color:var(--gold);margin:0 2px 8px;
+          border-bottom:1px solid var(--line);padding-bottom:6px}
+  .nblist{display:flex;flex-direction:column;gap:8px}
+  .nbitem{background:#10131c;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:9px 12px}
+  .nbitem .ev{color:#e9eef6;font-size:14px;line-height:1.46;margin:0}
+  .nbitem .lg{color:var(--muted);font-size:11.5px;font-weight:600;margin:5px 0 0}
+  .nbitem .lg::before{content:"\2192 ";color:var(--accent);font-weight:800}
+  .nbitem.bad{border-left-color:var(--red);background:#1c1014}
+  .nbitem.bad .ev{color:#ffd0d6}
+  .nbitem.herring{border-left-color:#3a4150}
+  .nbitem.herring .ev{color:#aab2c0;font-style:italic}
+  .nbitem.herring .htag{color:#6b7280;font-size:11px;margin:4px 0 0;font-weight:700}
   .rating{font-size:24px;letter-spacing:3px;color:var(--gold)}
   .rating .off{color:#3a4150}
   /* tabs */
@@ -270,6 +285,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="themes.js"></script>
+<script src="prose.js"></script>
 <script src="engine.js"></script>
 <script>
 (function(){
@@ -416,6 +432,26 @@
   function srcIcon(s){ return s.type==='location'?'📍':(theme.avatars?theme.avatars[s.val]:'👤'); }
   function srcName(s){ return cats[s.cat].values[s.val]; }
   function srcRole(s){ return s.type==='location'?'search the scene':((theme.roles&&theme.roles[s.val])||'question them'); }
+  /* ---------- evidence prose (detective-novel layer over the logic) ---------- */
+  function proseBank(){ return (window.DD_PROSE && window.DD_PROSE[theme.id]) || null; }
+  function valName(cat,val){ return cats[cat].values[val]; }
+  function fillTpl(t,map){ return t.replace(/\{(\w+)\}/g,function(m,k){ return map[k]!=null?map[k]:m; }); }
+  function narrate(clue,idx){   // idx = stable clue index -> deterministic wording
+    var bank=proseBank();
+    if(bank){
+      if(clue.kind==='either'){
+        var c=clue.opts[0][0], pool=bank.either&&bank.either[c];
+        if(pool&&pool.length) return fillTpl(pool[idx%pool.length],{who:valName(0,clue.a[1]),x:valName(c,clue.opts[0][1]),y:valName(c,clue.opts[1][1])});
+      } else {
+        var a=clue.e1,b=clue.e2; if(a[0]>b[0]){ var t=a; a=b; b=t; }
+        var pool2=(clue.kind==='pos'?bank.pos:bank.neg); pool2=pool2&&pool2[a[0]+'_'+b[0]];
+        if(pool2&&pool2.length) return fillTpl(pool2[idx%pool2.length],{a:valName(a[0],a[1]),b:valName(b[0],b[1])});
+      }
+    }
+    return clue.flavor||clue.logic||puzzle.clueText[idx];   // graceful fallback — notebook never blank
+  }
+  function herringFor(srcPos){ var bank=proseBank(); if(!bank||!bank.red||!bank.red.length) return null;
+    return bank.red[((currentSeed()>>>0)+srcPos)%bank.red.length]; }
   function discoveredSet(){ var set={},all=finished;
     sources().forEach(function(s){ if(all||searched[s.key]) s.clueIdx.forEach(function(i){ set[i]=1; }); }); return set; }
   function discoveredCount(){ return Object.keys(discoveredSet()).length; }
@@ -470,19 +506,34 @@
     var n=src.clueIdx.length;
     toast(n?('🔍 '+srcName(src)+' — '+n+' clue'+(n>1?'s':'')+' added to the Case File'):('🔍 '+srcName(src)+' — a dead end.')); }
 
-  function renderCaseFile(){
+  function renderCaseFile(){   // the detective's notebook, grouped by where you found it
     computeConflicts();
-    var set=discoveredSet(), idxs=Object.keys(set).map(Number).sort(function(a,b){ return a-b; });
-    var total=puzzle.clueText.length;
-    document.getElementById('clueCount').textContent='('+idxs.length+'/'+total+')';
+    var disc=discoveredSet(), foundN=Object.keys(disc).length, total=puzzle.clueText.length;
+    document.getElementById('clueCount').textContent='('+foundN+'/'+total+')';
     var box=document.getElementById('clues'); box.innerHTML='';
-    if(!idxs.length){ var e=document.createElement('div'); e.className='empty';
-      e.textContent='No leads yet. Search a location or question a suspect above to gather clues.'; box.appendChild(e); return; }
-    idxs.forEach(function(i){ var c=puzzle.clues[i];
-      var d=document.createElement('div'); d.className='clue'+(accConflicts.clues.indexOf(i)>=0?' bad':'');
-      var fl=document.createElement('p'); fl.className='fl'; fl.textContent=c.flavor||'';
-      var lg=document.createElement('p'); lg.className='lg'; lg.textContent=c.logic||puzzle.clueText[i];
-      d.appendChild(fl); d.appendChild(lg); box.appendChild(d); });
+    var seed=currentSeed()>>>0, shown=false;
+    sources().forEach(function(s,pos){
+      if(!(finished||searched[s.key])) return;
+      shown=true;
+      var clueIdxs=s.clueIdx.filter(function(i){ return disc[i]; });
+      var grp=document.createElement('div'); grp.className='nbgroup';
+      grp.innerHTML='<div class="nbhead">'+(s.type==='location'?'📍 At ':'🗣️ Questioning ')+srcName(s)+'</div>';
+      var list=document.createElement('div'); list.className='nblist';
+      clueIdxs.forEach(function(i){ var c=puzzle.clues[i];
+        var d=document.createElement('div'); d.className='nbitem'+(accConflicts.clues.indexOf(i)>=0?' bad':'');
+        var ev=document.createElement('p'); ev.className='ev'; ev.textContent=narrate(c,i);
+        var lg=document.createElement('p'); lg.className='lg'; lg.textContent=c.logic||puzzle.clueText[i];
+        d.appendChild(ev); d.appendChild(lg); list.appendChild(d); });
+      // a red herring: at dead-ends (so they read as a find, not "nothing"), and occasionally elsewhere
+      var herring=(clueIdxs.length===0 || (seed+pos)%3===0) ? herringFor(pos) : null;
+      if(herring){ var h=document.createElement('div'); h.className='nbitem herring';
+        var ev2=document.createElement('p'); ev2.className='ev'; ev2.textContent=herring;
+        var tg=document.createElement('p'); tg.className='htag'; tg.textContent='— likely nothing';
+        h.appendChild(ev2); h.appendChild(tg); list.appendChild(h); }
+      grp.appendChild(list); box.appendChild(grp);
+    });
+    if(!shown){ var e=document.createElement('div'); e.className='empty';
+      e.textContent='No leads yet. Search a location or question a suspect to fill your notebook.'; box.appendChild(e); }
   }
   function updateArrest(){ computeConflicts();
     document.getElementById('btnArrest').disabled = finished || !accComplete() || accConflicts.clues.length>0; }
