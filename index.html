@@ -71,6 +71,11 @@
   .chip.pop{animation:pop .2s ease}
   @keyframes pop{0%{transform:scale(.86)}55%{transform:scale(1.06)}100%{transform:scale(1)}}
   .hintline{margin:13px 2px 0;color:var(--muted);font-size:11.5px;text-align:center}
+  .ruled{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 2px 0}
+  .ruled .rl{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .rtok{background:#f4f1ea;border:1px dashed var(--line);color:#a79f8e;border-radius:8px;padding:4px 9px;
+        font-size:12px;text-decoration:line-through;cursor:pointer;font-weight:600}
+  .rtok:hover{color:var(--ink)}
   /* side panel */
   .panel{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
   .panel>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;padding:13px 15px;font-weight:800;font-size:14px;cursor:pointer}
@@ -252,12 +257,20 @@
 
   /* ---------- chip interaction ---------- */
   var lastTap=null; // for the one-shot "pop" animation on the chip just chosen
+  // Card uses positive assignment: choosing a value claims it (clearing any
+  // previous pick in this suspect's row and stealing it from another suspect).
+  // It never marks ✗ itself — impossible options are simply hidden at render.
+  function setChoice(s,c,v){
+    for(var n=0;n<cats[c].values.length;n++){ if(n!==v && E.gl(G,0,c,s,n)===1) E.sl(G,0,c,s,n,0); }
+    for(var o=0;o<cats[0].values.length;o++){ if(o!==s && E.gl(G,0,c,o,v)===1) E.sl(G,0,c,o,v,0); }
+    E.sl(G,0,c,s,v,1);
+  }
   function chipTap(c,v){ if(finished) return; startTimer();
-    var cur=E.gl(G,0,c,activeS,v);
-    if(cur===1) E.sl(G,0,c,activeS,v,0); else { setYesExcl(0,c,activeS,v); lastTap={s:activeS,c:c,v:v}; }
+    if(E.gl(G,0,c,activeS,v)===1) E.sl(G,0,c,activeS,v,0); // tap your pick again to change it
+    else { setChoice(activeS,c,v); lastTap={s:activeS,c:c,v:v}; }
     afterChange(); }
   function chipRuleOut(c,v){ if(finished) return; startTimer();
-    var cur=E.gl(G,0,c,activeS,v);
+    var cur=E.gl(G,0,c,activeS,v); if(cur===1) return; // can't rule out your own pick
     E.sl(G,0,c,activeS,v, cur===-1?0:-1);
     afterChange(); }
   function afterChange(){ saveProgress(); renderCard(); renderRail(); renderNotebook(); updateArrest(); }
@@ -287,38 +300,61 @@
   }
   function renderCard(){
     var card=document.getElementById('card'); card.innerHTML='';
-    var icons=['','📍','🛠️','🎭'], labels=['','Where','How','Why'];
+    var icons=['','📍','🛠️','🎭'], labels=['','Where','How','Why'], N=cats[0].values.length;
     var who=document.createElement('div'); who.className='who';
     who.innerHTML='<div class="big">'+(theme.avatars?theme.avatars[activeS]:'👤')+'</div>'+
       '<div><h2>'+cats[0].values[activeS]+'</h2><p>'+((theme.roles&&theme.roles[activeS])||'a suspect')+'</p></div>';
     card.appendChild(who);
+    function takenByOther(c,v){ for(var o=0;o<N;o++){ if(o!==activeS && E.gl(G,0,c,o,v)===1) return true; } return false; }
+    function makeChip(c,v,chosen){
+      var isGuilt=(c===theme.guilt.cat && v===theme.guilt.value);
+      var chip=document.createElement('div');
+      chip.className='chip'+(chosen?(' on'+(isGuilt?' guilt':'')):'')+
+        ((lastTap&&lastTap.s===activeS&&lastTap.c===c&&lastTap.v===v)?' pop':'');
+      chip.dataset.c=c; chip.dataset.v=v;
+      chip.innerHTML=(chosen?('<span class="mk">'+(isGuilt?'★':'✓')+'</span>'):'')+cats[c].values[v];
+      chip.onclick=function(){ chipTap(c,v); };
+      chip.oncontextmenu=function(e){ e.preventDefault(); chipRuleOut(c,v); };
+      var tmr=null;
+      chip.addEventListener('touchstart',function(){ tmr=setTimeout(function(){ tmr=null; chipRuleOut(c,v); }, 420); },{passive:true});
+      chip.addEventListener('touchend',function(e){ if(tmr){ clearTimeout(tmr); } else { e.preventDefault(); } });
+      chip.addEventListener('touchmove',function(){ if(tmr){ clearTimeout(tmr); tmr=null; } });
+      return chip;
+    }
     for(var c=1;c<cats.length;c++){
       (function(c){
         var seg=document.createElement('div'); seg.className='seg';
         seg.innerHTML='<div class="lab"><span>'+(icons[c]||'•')+'</span> '+(labels[c]||cats[c].label)+'</div>';
         var row=document.createElement('div'); row.className='row';
-        for(var v=0;v<cats[c].values.length;v++){
-          (function(v){
-            var val=E.gl(G,0,c,activeS,v);
-            var isGuilt=(c===theme.guilt.cat && v===theme.guilt.value);
-            var chip=document.createElement('div');
-            chip.className='chip'+(isGuilt?' guilt':'')+(val===1?' on':(val===-1?' off':''))+
-              ((lastTap&&lastTap.s===activeS&&lastTap.c===c&&lastTap.v===v)?' pop':'');
-            chip.innerHTML='<span class="mk">'+(val===1?(isGuilt?'★':'✓'):(val===-1?'✗':''))+'</span>'+cats[c].values[v];
-            chip.onclick=function(){ chipTap(c,v); };
-            chip.oncontextmenu=function(e){ e.preventDefault(); chipRuleOut(c,v); };
-            var tmr=null;
-            chip.addEventListener('touchstart',function(){ tmr=setTimeout(function(){ tmr=null; chipRuleOut(c,v); }, 420); },{passive:true});
-            chip.addEventListener('touchend',function(e){ if(tmr){ clearTimeout(tmr); } else { e.preventDefault(); } });
-            chip.addEventListener('touchmove',function(){ if(tmr){ clearTimeout(tmr); tmr=null; } });
-            row.appendChild(chip);
-          })(v);
+        var chosen=-1, ruled=[];
+        for(var v=0;v<cats[c].values.length;v++) if(E.gl(G,0,c,activeS,v)===1){ chosen=v; break; }
+        if(chosen>=0){
+          row.appendChild(makeChip(c,chosen,true));            // collapse to the answer
+        } else {
+          for(var v=0;v<cats[c].values.length;v++){
+            var st=E.gl(G,0,c,activeS,v);
+            if(st===-1){ ruled.push(v); continue; }             // you ruled it out -> footer
+            if(takenByOther(c,v)) continue;                     // claimed elsewhere -> hidden
+            row.appendChild(makeChip(c,v,false));
+          }
+          if(!row.children.length){
+            var none=document.createElement('div'); none.className='hintline'; none.style.margin='0';
+            none.textContent='No options left here — re-check the clues or your ruled-out picks.'; row.appendChild(none);
+          }
         }
-        seg.appendChild(row); card.appendChild(seg);
+        seg.appendChild(row);
+        if(chosen<0 && ruled.length){
+          var rf=document.createElement('div'); rf.className='ruled'; rf.innerHTML='<span class="rl">Ruled out</span>';
+          ruled.forEach(function(v){ var t=document.createElement('button'); t.className='rtok'; t.textContent=cats[c].values[v];
+            t.title='Tap to put back'; t.onclick=function(){ if(finished) return; E.sl(G,0,c,activeS,v,0); afterChange(); };
+            rf.appendChild(t); });
+          seg.appendChild(rf);
+        }
+        card.appendChild(seg);
       })(c);
     }
     var hint=document.createElement('p'); hint.className='hintline';
-    hint.textContent='Tap to choose ✓ · long-press to rule out ✗ · the rest update automatically';
+    hint.textContent='Tap to choose · tap your pick again to change it · long-press to rule one out';
     card.appendChild(hint);
     lastTap=null; // pop is one-shot
   }
@@ -375,8 +411,8 @@
     var N=cats[0].values.length,opts=[];
     for(var s=0;s<N;s++) for(var c=1;c<cats.length;c++){ var v=puzzle.solution[s][c]; if(E.gl(G,0,c,s,v)!==1) opts.push([c,s,v]); }
     if(!opts.length){ toast('Nothing left to reveal — make the arrest!'); return; }
-    var p=opts[Math.floor(Math.random()*opts.length)]; setYesExcl(0,p[0],p[1],p[2]); hintsUsed++;
-    activeS=p[1]; afterChange(); renderRail(); toast('Hint revealed ('+hintsUsed+' used)'); }
+    var p=opts[Math.floor(Math.random()*opts.length)]; activeS=p[1]; setChoice(p[1],p[0],p[2]); hintsUsed++;
+    lastTap={s:p[1],c:p[0],v:p[2]}; afterChange(); renderRail(); toast('Hint revealed ('+hintsUsed+' used)'); }
   function makeArrest(){ if(finished||!anchorComplete()) return;
     if(isCorrect()) endGame(true); else toast('The evidence doesn’t hold together — re-check the clues.'); }
   function endGame(success){
