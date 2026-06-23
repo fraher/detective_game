@@ -13,8 +13,9 @@ const EXE = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 let pass = 0, fail = 0;
 function ok(cond, label) { if (cond) { pass++; console.log('  ✓ ' + label); } else { fail++; console.error('  ✗ ' + label); } }
 
-const chip = (c, v) => `#card .seg:nth-child(${c + 1}) .chip:nth-child(${v + 1})`;
+const chip = (c, v) => `#card .chip[data-c="${c}"][data-v="${v}"]`;
 const cls = (page, sel) => page.getAttribute(sel, 'class');
+const present = (page, sel) => page.$(sel).then(h => !!h);
 
 (async () => {
   const browser = await chromium.launch({ executablePath: EXE, args: ['--no-sandbox'] });
@@ -27,22 +28,26 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   // 1) arrest disabled at start
   ok(await page.getAttribute('#btnArrest', 'disabled') !== null, 'arrest is disabled before solving');
 
-  // 2) tap-to-select auto-eliminates the rest of that group (suspect 0, Where)
+  // 2) tap-to-choose collapses the group to the answer; alternatives are hidden
   await page.click('#rail .face:nth-child(1)');
   await page.click(chip(1, 0)); // suspect0 Where value0
-  ok(/\bon\b/.test(await cls(page, chip(1, 0))), 'tapped chip becomes selected (✓)');
-  ok(/\boff\b/.test(await cls(page, chip(1, 1))), 'other chips in the group auto-rule-out (✗)');
+  ok(/\bon\b/.test(await cls(page, chip(1, 0))), 'tapped chip becomes the chosen answer (✓)');
+  ok(await present(page, chip(1, 1)) === false, 'other options in that group are hidden once chosen');
 
-  // 3) cross-suspect column elimination: value0 of Where is ruled out for suspect 1
+  // 3) a value claimed by one suspect is hidden for the others
   await page.click('#rail .face:nth-child(2)');
-  ok(/\boff\b/.test(await cls(page, chip(1, 0))), 'same value is ruled out for another suspect');
+  ok(await present(page, chip(1, 0)) === false, 'value claimed elsewhere is hidden for another suspect');
 
-  // 4) right-click / long-press rules out a neutral chip manually
-  await page.click('#rail .face:nth-child(2)');
-  await page.click(chip(2, 0), { button: 'right' }); // How value0 -> rule out
-  ok(/\boff\b/.test(await cls(page, chip(2, 0))), 'right-click/long-press rules out a chip');
+  // 4) right-click / long-press rules out an option -> hidden, recoverable in footer
+  await page.click(chip(2, 0), { button: 'right' }); // suspect1 How value0 -> rule out
+  ok(await present(page, chip(2, 0)) === false, 'ruled-out option is removed from the choices');
+  ok(await present(page, '#card .rtok') === true, 'ruled-out option shows in the recoverable footer');
 
-  // 5) full solve -> arrest enables -> win modal -> streak increments
+  // 5) clean solve from a fresh slate -> arrest enables -> win -> streak increments
+  await page.evaluate(() => { localStorage.clear(); localStorage.setItem('dd:seenHow', '1'); });
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(150);
+  await page.click('#modalClose').catch(() => {});
   const sol = await page.evaluate(() => window.__dd.sol());
   for (let s = 0; s < sol.length; s++) {
     await page.click(`#rail .face:nth-child(${s + 1})`);
@@ -56,7 +61,7 @@ const cls = (page, sel) => page.getAttribute(sel, 'class');
   ok(/🔥 [1-9]/.test(await page.textContent('#pillStreak')), 'streak increments on a win');
 
   // 6) persistence: reload resumes the finished/won state
-  await page.goto(URL, { waitUntil: 'networkidle' });
+  await page.reload({ waitUntil: 'networkidle' });
   ok(await page.evaluate(() => window.__dd.fin()) === true, 'finished state persists across reload');
 
   // 7) Notebook reflects edits (open, click a cell, it marks)
